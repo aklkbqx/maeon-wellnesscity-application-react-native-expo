@@ -1,8 +1,8 @@
-import { TextInput, TouchableOpacity, View, Dimensions, KeyboardAvoidingView, Platform, ScaledSize, ScrollView, Modal, ActivityIndicator } from 'react-native';
+import { TextInput, TouchableOpacity, View, Dimensions, KeyboardAvoidingView, Platform, ScaledSize, ScrollView, Modal, ActivityIndicator, BackHandler } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import { LogoMaeOn } from '@/components/SvgComponents';
 import TextTheme from '@/components/TextTheme';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useStatusBar } from '@/hooks/useStatusBar';
 import tw from "twrnc";
 import { Ionicons } from '@expo/vector-icons';
@@ -161,6 +161,17 @@ const Register: React.FC = () => {
 
     const handleFocus = () => setIsScrollEnabled(true);
     const handleBlur = () => setIsScrollEnabled(false);
+
+    useFocusEffect(
+        useCallback(() => {
+            const onBackPress = () => {
+                router.back();
+                return true;
+            };
+            BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [])
+    );
 
     return (
         <>

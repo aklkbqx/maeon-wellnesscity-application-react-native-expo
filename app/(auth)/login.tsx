@@ -1,8 +1,8 @@
-import { Keyboard, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, Dimensions, Alert, ScaledSize, Platform, ActivityIndicator, Modal } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { Keyboard, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, Dimensions, Alert, ScaledSize, Platform, ActivityIndicator, Modal, BackHandler } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { LogoMaeOn } from '@/components/SvgComponents'
 import TextTheme from '@/components/TextTheme'
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { AxiosError } from 'axios'
 import { useStatusBar } from '@/hooks/useStatusBar';
@@ -107,6 +107,18 @@ const Login = () => {
             setModalVisible(false);
         }
     };
+
+    useFocusEffect(
+        useCallback(() => {
+            const onBackPress = () => {
+                router.back();
+                return true;
+            };
+            BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [])
+    );
+
 
     return (
         <View style={tw`flex-1`}>

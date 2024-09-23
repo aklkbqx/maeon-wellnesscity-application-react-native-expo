@@ -42,12 +42,22 @@ export const saveTokenAndLogin = async (token: string) => {
     }
 };
 
-export const tabbarStyle = [{
-    position: "absolute",
-    width: "90%",
-    height: 60,
-    bottom: 20,
-    left: "5%",
-    borderRadius: 25,
-    borderTopWidth: 0
-}, tw`shadow bg-teal-600`];
+export const tabbarStyle = tw`shadow bg-white rounded-t-3xl absolute w-full h-[80px] bottom-0 border-t-0`;
+
+export const formatDate = (dateString: string) => {
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${parseInt(year) + 543}`;
+};
+
+export const formatDateThai = (dateString: string): string => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const monthNames = [
+        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+    ];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear() + 543;
+
+    return `${day} ${month} ${year}`;
+};

@@ -1,11 +1,11 @@
-import { View, TextInput, TouchableWithoutFeedback, Keyboard, FlatList, TouchableOpacity } from 'react-native'
+import { View, TextInput, TouchableWithoutFeedback, Keyboard, FlatList, TouchableOpacity, BackHandler } from 'react-native'
 import React, { useState, useCallback, useEffect } from 'react'
 import { useStatusBar } from '@/hooks/useStatusBar';
 import { Ionicons } from '@expo/vector-icons';
 import tw from "twrnc"
 import TextTheme from '@/components/TextTheme';
-import { useNavigation } from 'expo-router';
-import { tabbarStyle } from '@/helper/my-lib';
+import { useTabBar } from '@/context/TabBarContext';
+import { router, useFocusEffect } from 'expo-router';
 
 const DATA = [
   {
@@ -24,6 +24,7 @@ const DATA = [
 
 const Search = () => {
   useStatusBar("dark-content");
+  const { hideTabBar, showTabBar } = useTabBar();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState(DATA);
 
@@ -34,7 +35,23 @@ const Search = () => {
     );
     setFilteredData(filtered);
   }, []);
-  
+
+  useFocusEffect(useCallback(() => {
+    hideTabBar();
+    return () => showTabBar()
+  }, [hideTabBar, showTabBar]));
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        router.back();
+        return true;
+      };
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  );
+
 
   return (
     <View style={tw`flex-1`}>

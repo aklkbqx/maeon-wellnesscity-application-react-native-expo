@@ -1,20 +1,16 @@
-import { TouchableOpacity, Animated } from 'react-native'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { router, Stack, useFocusEffect, useNavigation } from 'expo-router'
+import { TouchableOpacity } from 'react-native'
+import { useCallback, useEffect, useState } from 'react'
+import { router, Stack, useNavigation } from 'expo-router'
 import TextTheme from '@/components/TextTheme'
 import tw from "twrnc"
 import { Ionicons } from '@expo/vector-icons'
-import { tabbarStyle } from '@/helper/my-lib'
-import { Image, View } from 'react-native-ui-lib'
+import { Avatar, Image, View } from 'react-native-ui-lib'
 import * as Animatable from 'react-native-animatable';
+import { LinearGradient } from 'expo-linear-gradient'
 
 const RootHome = () => {
     const navigation = useNavigation()
-    const tabBarAnimation = useRef(new Animated.Value(1)).current;
-    const tabBarHeight = useRef(new Animated.Value(60)).current;
     const [showCalendar, setShowCalendar] = useState<boolean>(false);
-
-    //TODO ทำระบบการเลื่อนปิด tabbar เมื่อมาถึงหน้าปฏิทิน
 
     const toggleView = useCallback(() => {
         router.navigate(!showCalendar ? "/selectdatatime" : "/");
@@ -24,36 +20,11 @@ const RootHome = () => {
     useEffect(() => {
         const unsubscribe = navigation.addListener('state', (e) => {
             const currentRoute = e.data.state.routes[e.data.state.index];
-            const shouldHideTabBar = ["search"].includes(currentRoute.state?.routes[1]?.name as any);
-
-            Animated.parallel([
-                Animated.timing(tabBarAnimation, {
-                    toValue: shouldHideTabBar ? 0 : 1,
-                    duration: 300,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(tabBarHeight, {
-                    toValue: shouldHideTabBar ? 0 : 50,
-                    duration: 300,
-                    useNativeDriver: false,
-                })
-            ]).start();
-
-            if (!shouldHideTabBar) {
-                navigation.setOptions({
-                    tabBarStyle: [{
-                        transform: [{
-                            translateY: tabBarAnimation.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [100, 0],
-                            })
-                        }],
-                    }, tabbarStyle]
-                });
-            }
+            const routeToHideTabBar = ["search"].includes(currentRoute.state?.routes[1]?.name as any);
+            routeToHideTabBar
         });
         return unsubscribe;
-    }, [navigation, tabBarAnimation, tabBarHeight]);
+    }, [])
 
     return (
         <Stack
@@ -62,7 +33,7 @@ const RootHome = () => {
                 headerTitleStyle: [tw`text-lg`, { fontFamily: "Prompt-SemiBold" }],
                 headerTitleAlign: "center",
                 headerShadowVisible: false,
-                animation: "simple_push",
+                animation: "simple_push"
             }}
         >
             <Stack.Screen name='(index)' options={{
@@ -75,23 +46,34 @@ const RootHome = () => {
                             </View>
                             <View style={tw`px-5 pt-10 pb-5`}>
                                 <View style={tw`flex-row items-center gap-3`}>
-                                    <View style={tw`bg-slate-200 h-25 w-25 rounded-full border-2 border-white justify-center items-center`}>
-                                        <Image style={[tw`bg-slate-200 h-25 w-25 rounded-full border-2 border-white`, { objectFit: "cover" }]} />
+                                    <View style={tw`bg-slate-100 h-25 w-25 rounded-full border-2 border-slate-100 justify-center items-center`}>
+                                        <Avatar
+                                            size={95}
+                                            badgeProps={{ backgroundColor: String(tw`text-green-500`.color), size: 20 }}
+                                            source={require("@/assets/images/default-profile.jpg")}
+                                        // onImageLoadStart={() => console.log('Image load started')}
+                                        // onImageLoadEnd={() => console.log('Image load ended')}
+                                        // onImageLoadError={() => console.log('Image load failed')}
+                                        />
                                     </View>
                                     <View style={tw`flex-col`}>
                                         <TextTheme size='lg' color='teal-600'>
                                             ยินดีต้อนรับ
                                         </TextTheme>
                                         <View style={tw`flex-row gap-2`}>
-                                            <TouchableOpacity onPress={() => router.navigate("/(register)")} style={tw`bg-white p-1 px-2 rounded-xl shadow`}>
-                                                <TextTheme size='lg' color='teal-900'>
-                                                    ลงทะเบียน
-                                                </TextTheme>
+                                            <TouchableOpacity onPress={() => router.navigate("/(register)")}>
+                                                <LinearGradient style={tw`p-1 px-2 rounded-xl`} colors={[String(tw.color("white")), String(tw.color("slate-200"))]}>
+                                                    <TextTheme size='lg' color='black'>
+                                                        ลงทะเบียน
+                                                    </TextTheme>
+                                                </LinearGradient>
                                             </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => router.navigate("/login")} style={tw`bg-teal-500 p-1 px-2 rounded-xl shadow`}>
-                                                <TextTheme size='lg' color='white'>
-                                                    เข้าสู่ระบบ
-                                                </TextTheme>
+                                            <TouchableOpacity onPress={() => router.navigate("/login")}>
+                                                <LinearGradient style={tw`p-1 px-2 rounded-xl`} colors={[String(tw.color("teal-400")), String(tw.color("teal-500"))]}>
+                                                    <TextTheme size='lg' color='white'>
+                                                        เข้าสู่ระบบ
+                                                    </TextTheme>
+                                                </LinearGradient>
                                             </TouchableOpacity>
                                         </View>
                                     </View>
@@ -102,25 +84,33 @@ const RootHome = () => {
                             </View>
 
                             <Animatable.View
-                                animation={"fadeInRightBig"}
-                                iterationCount={1}
+                                animation={showCalendar ? "fadeInRightBig" : "pulse"}
+                                iterationCount={showCalendar ? 1 : "infinite"}
                                 direction="normal"
-                                duration={1000}
-                                style={[tw`absolute top-35 right-[-25px] p-3 px-4 pr-10 bg-white rounded-l-full z-99 shadow border-r-0 border-teal-500 shadow`]}
+                                duration={showCalendar ? 1000 : 3000}
+                                style={[tw`absolute top-33 right-[-25px]`]}
                             >
-                                <TouchableOpacity style={tw`flex-row items-center gap-2`} onPress={toggleView}>
-                                    {showCalendar ? <Ionicons name='arrow-undo' size={25} style={tw`text-teal-500`} />
-                                        : <Ionicons name='airplane' size={25} style={tw`text-teal-500`} />}
-                                    <TextTheme font='Prompt-Bold' style={tw`text-teal-500`} size='lg'>
-                                        {showCalendar ? 'กลับสู่หน้าหลัก' : 'เริ่มจองทริปของคุณ'}
-                                    </TextTheme>
+                                <TouchableOpacity onPress={toggleView} style={tw`shadow rounded-l-full border border-teal-100`}>
+                                    {!showCalendar ? (
+                                        <View style={tw`relative z-999`}>
+                                            <View style={tw`absolute z-999 bg-red-400 w-3.5 h-3.5 rounded-full`} />
+                                        </View>
+                                    ) : null}
+                                    <LinearGradient style={tw`flex-row items-center gap-2 p-3 px-4 pr-10 relative rounded-l-full`}
+                                        colors={[String(tw.color("white")), String(tw.color("slate-100"))]}>
+                                        {showCalendar ? <Ionicons name='arrow-undo' size={25} style={tw`text-teal-500`} />
+                                            : (<Ionicons name='car' size={30} style={tw`text-teal-500`} />)}
+                                        <TextTheme font='Prompt-Bold' style={tw`text-teal-500`} size='lg'>
+                                            {showCalendar ? 'กลับสู่หน้าหลัก' : 'เริ่มจองทริปของคุณ'}
+                                        </TextTheme>
+                                    </LinearGradient>
                                 </TouchableOpacity>
                             </Animatable.View>
                         </View>
                     )
                 }
             }} />
-            <Stack.Screen name='search' options={{
+            < Stack.Screen name='search' options={{
                 title: "",
                 presentation: "card",
                 headerLeft: () => (
@@ -132,7 +122,7 @@ const RootHome = () => {
                 headerStyle: tw`bg-slate-100`,
                 contentStyle: tw`bg-slate-100`,
             }} />
-        </Stack>
+        </Stack >
     )
 }
 
