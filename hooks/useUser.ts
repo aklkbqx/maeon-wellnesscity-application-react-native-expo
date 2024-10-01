@@ -1,52 +1,70 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api, handleApiError } from '@/helper/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { USER_TYPE } from '@/constants/userType';
+import { router } from 'expo-router';
+import { USER_TYPE } from '@/types/userType';
+import useShowToast from './useShowToast';
+import { userTokenLogin } from '@/helper/my-lib';
 
 const useUser = () => {
-    const [user, setUser] = useState<USER_TYPE | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [isLogin, setIsLogin] = useState<boolean>(false);
 
-    const fetchUser = useCallback(async () => {
-        setLoading(true);
-        try {
-            const response = await api.get('/api/v1/users/me');
-            setUser(response.data);
-            setError(null);
-        } catch (err) {
-            handleApiError(err);
-            setError('Failed to fetch user data');
-            setUser(null);
-        } finally {
-            setLoading(false);
-        }
+    const fetchUserData = useCallback(async (setUserData: React.Dispatch<React.SetStateAction<USER_TYPE | null>>) => {
+        return new Promise((resolve, reject) =>
+            api.get('/api/v1/users/me')
+                .then(response => {
+                    setUserData(response.data);
+                    resolve(null);
+                }).catch(error => {
+                    handleApiError(error);
+                    setError('ข้อมูลหายไปจากระบบ ไม่สามารถโหลดข้อมูลผู้ใช้ได้\nกรุณาทำการเข้าสู่ระบบหรือลงทะเบียนใหม่อีกครั้ง');
+                    logout();
+                    reject(error);
+                })
+        )
     }, []);
+
+
+    const checkLoginStatus = useCallback(async () => {
+        const token = await AsyncStorage.getItem(userTokenLogin);
+        if (token) {
+            setIsLogin(true)
+            return { login: true };
+        } else {
+            setIsLogin(false)
+            return { login: false };
+        }
+    }, [fetchUserData]);
+
 
     const logout = useCallback(async () => {
         try {
-            await AsyncStorage.removeItem('userToken');
-            setUser(null);
-        } catch (err) {
-            console.error('Error during logout:', err);
+            await api.post("/api/v1/auth/logout");
+            await AsyncStorage.removeItem(userTokenLogin);
+        } catch (error) {
+            await AsyncStorage.removeItem(userTokenLogin);
         }
     }, []);
 
-    const checkLoginStatus = useCallback(async () => {
-        const token = await AsyncStorage.getItem('userToken');
-        if (token) {
-            await fetchUser();
-        } else {
-            setUser(null);
-            setLoading(false);
-        }
-    }, [fetchUser]);
-
     useEffect(() => {
         checkLoginStatus();
-    }, [checkLoginStatus]);
+    }, [isLogin])
 
-    return { user, loading, error, fetchUser, logout, checkLoginStatus };
+    useEffect(() => {
+        if (error) {
+            router.replace({
+                pathname: "/error-page",
+                params: { error }
+            });
+            if (error == "ข้อมูลหายไปจากระบบ ไม่สามารถโหลดข้อมูลผู้ใช้ได้\nกรุณาทำการเข้าสู่ระบบหรือลงทะเบียนใหม่อีกครั้ง") {
+                logout();
+            }
+        }
+        setError(null);
+    }, [error])
+
+    return { error, fetchUserData, logout, checkLoginStatus, isLogin };
 };
 
 export default useUser;

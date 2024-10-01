@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Animated, View as RNView, RefreshControl } from 'react-native';
-import { View, Colors, Typography, Drawer, Assets, TouchableOpacity, Badge } from 'react-native-ui-lib';
+import { ScrollView, Animated, View as RNView, RefreshControl } from 'react-native';
+import { View, Colors, Drawer, TouchableOpacity, Badge } from 'react-native-ui-lib';
 import { Ionicons } from '@expo/vector-icons';
 import tw from "twrnc";
 import TextTheme from '@/components/TextTheme';
@@ -119,7 +119,7 @@ const Notifications: React.FC = () => {
       return (
         <View style={tw`flex-1 items-center justify-center mt-10`}>
           <View style={tw`bg-slate-200 rounded-full p-2`}>
-            <Ionicons name='notifications-off' size={50} style={tw`text-teal-500`} />
+            <Ionicons name='notifications-off' size={50} style={tw`text-blue-500`} />
           </View>
           <TextTheme style={tw`text-center text-gray-500`}>
             ขณะนี้ยังไม่มีการแจ้งเตือนเข้ามา...
@@ -145,8 +145,8 @@ const Notifications: React.FC = () => {
         <RefreshControl
           refreshing={false}
           onRefresh={() => { }}
-          colors={[String(tw`text-teal-500`.color)]}
-          tintColor={String(tw`text-teal-500`.color)} />
+          colors={[String(tw`text-blue-500`.color)]}
+          tintColor={String(tw`text-blue-500`.color)} />
       }
     >
       {renderContent()}

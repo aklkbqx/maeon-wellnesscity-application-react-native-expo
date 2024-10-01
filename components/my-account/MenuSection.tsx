@@ -1,9 +1,13 @@
+import React, { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import TextTheme from "../TextTheme";
 import { TouchableOpacity, View } from "react-native";
 import tw from "twrnc";
 import { Href, router } from "expo-router";
 import { Switch } from "react-native-ui-lib";
+import useUser from "@/hooks/useUser";
+import LogoutModal from "../LogoutModal";
+import { USER_TYPE } from "@/types/userType";
 
 type IoniconsName = keyof typeof Ionicons.glyphMap;
 
@@ -23,7 +27,7 @@ const menuList: MenuList = {
         {
             text: "ข้อมูลส่วนตัว",
             iconname: "person",
-            link: "/pages/manage-account"
+            link: "/edit-account"
         },
         {
             text: "สิ่งที่ถูกใจ",
@@ -62,19 +66,36 @@ const menuList: MenuList = {
     ]
 };
 
-const MenuSection: React.FC<{ title: string; type: keyof typeof menuList }> = ({ title, type }) => {
+const MenuSection: React.FC<{ title: string; type: keyof typeof menuList; userData: USER_TYPE | null }> = ({ title, type, userData }) => {
+    const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+    const { logout } = useUser();
+
     const items = menuList[type] || [];
+
+    const filteredItems = items.filter(item => {
+        if (item.text === "ออกจากระบบ") {
+            return userData !== null;
+        }
+        return true;
+    });
+
+    const handleItemPress = (link: string, text: string) => {
+        if (text === "ออกจากระบบ") {
+            setIsLogoutModalVisible(true);
+        } else {
+            router.navigate(link as Href);
+        }
+    };
 
     return (
         <>
             {title && <TextTheme children={title} size="lg" color="zinc-400" font="Prompt-SemiBold" style={tw`px-5 my-2`} />}
             <View style={tw`border-b-2 border-slate-200`} />
-            {items.map(({ text, iconname, link }, index) => (
+            {filteredItems.map(({ text, iconname, link }, index) => (
                 <TouchableOpacity
                     key={`menulist-${type}-${index}`}
-                    onPress={() => router.navigate(link as Href)}
-                    style={tw`flex-row justify-between items-center px-5 w-full py-3`}
-                >
+                    onPress={() => handleItemPress(link, text)}
+                    style={tw`flex-row justify-between items-center px-5 w-full py-3`}>
                     <View style={tw`flex-row items-center gap-2`}>
                         <Ionicons style={text == "ออกจากระบบ" ? tw`text-red-600` : tw`text-zinc-700`} size={25} name={iconname} />
                         <TextTheme color={text == "ออกจากระบบ" ? "red-600" : 'zinc-700'} style={tw`text-[16px]`}>{text}</TextTheme>
@@ -86,6 +107,11 @@ const MenuSection: React.FC<{ title: string; type: keyof typeof menuList }> = ({
                     ) : null}
                 </TouchableOpacity>
             ))}
+            <LogoutModal
+                isVisible={isLogoutModalVisible}
+                onClose={() => setIsLogoutModalVisible(false)}
+                onLogout={() => logout()}
+            />
         </>
     );
 };

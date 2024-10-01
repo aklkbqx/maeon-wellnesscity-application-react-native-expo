@@ -65,6 +65,7 @@ const Search = () => {
               value={searchQuery}
               onChangeText={handleSearch}
               autoCapitalize='none'
+              autoFocus
             />
             <Ionicons name='search' style={tw`text-zinc-500 absolute top-[15%] android:top-[20%] left-[4%] text-xl`} />
           </View>

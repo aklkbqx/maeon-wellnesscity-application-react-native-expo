@@ -6,6 +6,7 @@ import tw from "twrnc"
 import TextTheme from '@/components/TextTheme'
 import { tabbarStyle } from '@/helper/my-lib'
 import { TabBarProvider, useTabBar } from '@/context/TabBarContext'
+import AppUsageTracker from '@/components/AppUsageTracker'
 
 const TabNavigator = () => {
   const { tabBarStyle } = useTabBar();
@@ -14,10 +15,10 @@ const TabNavigator = () => {
       <Tabs screenOptions={{
         tabBarLabelStyle: { fontFamily: "Prompt-Regular" },
         tabBarStyle: tabBarStyle,
-        tabBarActiveTintColor: `${tw`text-teal-500`.color}`,
-        tabBarInactiveTintColor: `${tw`text-teal-500`.color}`,
-        tabBarActiveBackgroundColor: `${tw`text-teal-50`.color}`,
-        tabBarItemStyle: tw`rounded-[10] m-[7px]`,
+        tabBarActiveTintColor: String(tw.color("blue-500")),
+        tabBarInactiveTintColor: String(tw.color("blue-400")),
+        tabBarActiveBackgroundColor: `${tw`text-blue-50`.color}`,
+        tabBarItemStyle: tw`rounded-[5] m-[7px]`,
         headerShadowVisible: true,
       }}
         safeAreaInsets={{ bottom: 20, left: 0, right: 0, top: 0 }}
@@ -83,6 +84,7 @@ const RootHome = () => {
   return (
     <TabBarProvider defaultStyle={tabbarStyle}>
       <TabNavigator />
+      <AppUsageTracker />
     </TabBarProvider>
   );
 };
