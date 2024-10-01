@@ -1,9 +1,7 @@
 import QRCodeGenerator from '@/components/QRCodeGenerator';
 import TextTheme from '@/components/TextTheme';
-import { apiUrl } from '@/helper/api';
 import { useStatusBar } from '@/hooks/useStatusBar';
-import { Ionicons } from '@expo/vector-icons';
-import { Image, RefreshControl, ScrollView } from 'react-native';
+import { Image } from 'react-native';
 import { View } from 'react-native-ui-lib';
 import tw from "twrnc"
 

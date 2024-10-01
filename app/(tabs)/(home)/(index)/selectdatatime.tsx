@@ -9,7 +9,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTabBar } from '@/context/TabBarContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loading from '@/components/Loading';
-import { api } from '@/helper/api';
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import * as Animatable from 'react-native-animatable';
 
 interface MarkedDates {
@@ -205,13 +206,7 @@ const SelectDateTime: React.FC = () => {
         setTodyDateState(formattedDateMinDate);
       }
     } catch (error) {
-      console.error('Error fetching Thai time: ', error);
-      router.replace({
-        pathname: "/error-page",
-        params: {
-          error: 'Error fetching Thai time: ' + error
-        }
-      });
+      handleErrorMessage(`ไม่สามารถโหลดข้อมูลปฏิทินไทยได้ในขณะนี้\nโปรดลองอีกครั้ง`, true);
     } finally {
       setLoading(false);
     }

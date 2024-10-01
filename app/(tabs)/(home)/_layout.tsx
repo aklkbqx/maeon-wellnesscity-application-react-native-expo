@@ -7,7 +7,8 @@ import { Ionicons } from '@expo/vector-icons'
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { formatEmail } from '@/helper/my-lib'
-import { api, apiUrl } from '@/helper/api'
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import { Avatar, View } from 'react-native-ui-lib'
 import { useStatusBar } from '@/hooks/useStatusBar'
 import useUser from '@/hooks/useUser'
@@ -50,6 +51,7 @@ const RootHome = () => {
             const res = await api.get(`/images/user_images/${profile}`);
             setProfileImageUrl(res.request.responseURL);
         } catch {
+            handleErrorMessage("ไม่สามารถโหลดรูปภาพโปรไฟล์ได้");
             setProfileImageUrl(null);
         }
     }, []);

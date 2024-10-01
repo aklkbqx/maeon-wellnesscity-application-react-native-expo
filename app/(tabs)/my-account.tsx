@@ -5,7 +5,8 @@ import ProfileSection from '@/components/my-account/ProfileSection';
 import MenuSection from '@/components/my-account/MenuSection';
 import useUser from '@/hooks/useUser';
 import Loading from '@/components/Loading';
-import { api } from '@/helper/api';
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import { useFocusEffect } from 'expo-router';
 import { useStatusBar } from '@/hooks/useStatusBar';
 import { USER_TYPE } from '@/types/userType';
@@ -25,6 +26,7 @@ const MyAccount: React.FC = () => {
       setProfileImageUrl(res.request.responseURL);
     } catch {
       setProfileImageUrl(null);
+      handleErrorMessage("ไม่สามารถโหลดรูปภาพโปรไฟล์ได้");
     }
   }, []);
 

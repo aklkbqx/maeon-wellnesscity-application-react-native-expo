@@ -8,7 +8,8 @@ import { BlurView } from 'expo-blur';
 import tw from "twrnc"
 import { Ionicons } from '@expo/vector-icons'
 import useShowToast from '@/hooks/useShowToast'
-import { api, handleApiError } from '@/helper/api'
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import useRoleNavigation from '@/hooks/useRoleNavigation'
 import { saveTokenAndLogin } from '@/helper/my-lib'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -89,7 +90,7 @@ const Login = () => {
                 }
             }, 1000);
         } catch (error) {
-            handleApiError(error);
+            handleErrorMessage("ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง");
             setModalVisible(false);
             setLoading(false);
         } finally {

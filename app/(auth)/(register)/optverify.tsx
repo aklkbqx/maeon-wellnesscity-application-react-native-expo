@@ -3,7 +3,8 @@ import { View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Scro
 import { useLocalSearchParams, router } from 'expo-router';
 import tw from 'twrnc';
 import TextTheme from '@/components/TextTheme';
-import { api, handleApiError } from '@/helper/api';
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import useShowToast from '@/hooks/useShowToast';
 import { saveTokenAndLogin } from '@/helper/my-lib';
 import { BlurView } from 'expo-blur';
@@ -87,7 +88,7 @@ const OTPVerification: React.FC = () => {
                 throw new Error(response.data.error || 'เกิดข้อผิดพลาดในการยืนยัน OTP');
             }
         } catch (error) {
-            handleApiError(error);
+            handleErrorMessage(error);
             setModalVisible(false);
         } finally {
             setLoading(false);
@@ -100,7 +101,7 @@ const OTPVerification: React.FC = () => {
             await api.post('/api/v1/auth/resend-otp', { phone });
             useShowToast("success", "ส่ง OTP ใหม่แล้ว", "กรุณาตรวจสอบ SMS ของคุณ");
         } catch (error) {
-            handleApiError(error);
+            handleErrorMessage("ไม่สามารถส่ง OTP ใหม่ได้ กรุณาลองใหม่อีกครั้ง");
         }
     };
 

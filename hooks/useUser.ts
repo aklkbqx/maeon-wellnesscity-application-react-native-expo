@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api, handleApiError } from '@/helper/api';
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { USER_TYPE } from '@/types/userType';
@@ -17,7 +18,7 @@ const useUser = () => {
                     setUserData(response.data);
                     resolve(null);
                 }).catch(error => {
-                    handleApiError(error);
+                    handleErrorMessage(error);
                     setError('ข้อมูลหายไปจากระบบ ไม่สามารถโหลดข้อมูลผู้ใช้ได้\nกรุณาทำการเข้าสู่ระบบหรือลงทะเบียนใหม่อีกครั้ง');
                     logout();
                     reject(error);

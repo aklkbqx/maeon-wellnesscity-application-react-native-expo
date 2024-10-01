@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import tw from 'twrnc';
-import { api, apiUrl, handleApiError } from '@/helper/api';
+import api, { apiUrl } from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import { Ionicons } from '@expo/vector-icons';
 import Loading from '@/components/Loading';
 import TextTheme from '@/components/TextTheme';
@@ -28,10 +29,6 @@ interface BookingItem {
         date: string;
     }[]
 }
-interface BookingDetail {
-    program_id: number;
-    date: string;
-}
 
 const DetailProgramScreen: React.FC = () => {
     const { programId, bookingData, dateSelected } = useLocalSearchParams();
@@ -40,7 +37,7 @@ const DetailProgramScreen: React.FC = () => {
         try {
             return JSON.parse((bookingData as string) || '[]');
         } catch {
-            handleApiError('Failed to parse initial dates');
+            handleErrorMessage('Failed to parse initial dates');
             return [];
         }
     });
@@ -54,8 +51,7 @@ const DetailProgramScreen: React.FC = () => {
                 setProgramDetail(response.data.programDetail);
             }
         } catch (error) {
-            handleApiError(error);
-        } finally {
+            handleErrorMessage('ไม่สามารถโหลดข้อมูลของโปรแกรมที่เลือกได้ กรุณาลองใหม่อีกครั้ง', true);
         }
     }, [parseInt(programId as string)]);
 

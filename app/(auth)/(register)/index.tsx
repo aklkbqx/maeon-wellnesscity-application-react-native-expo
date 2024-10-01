@@ -6,7 +6,8 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useStatusBar } from '@/hooks/useStatusBar';
 import tw from "twrnc";
 import { Ionicons } from '@expo/vector-icons';
-import { api, handleApiError } from '@/helper/api';
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import useShowToast from '@/hooks/useShowToast';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -143,7 +144,7 @@ const Register: React.FC = () => {
                 throw new Error(response.data.error || 'เกิดข้อผิดพลาดในการลงทะเบียน');
             }
         } catch (error) {
-            handleApiError(error);
+            handleErrorMessage("ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง");
             setModalVisible(false);
         } finally {
             setLoading(false);
@@ -253,7 +254,7 @@ const Register: React.FC = () => {
                                                 placeholder={field === 'tel' ? 'เบอร์โทรศัพท์' : field === 'email' ? 'อีเมล' : field === 'password' ? 'รหัสผ่าน' : 'ยืนยันรหัสผ่านอีกครั้ง'}
                                                 placeholderTextColor={"#71717a"}
                                                 value={formData[field]}
-                                                onChangeText={(text) => handleInputChange(field,text)}
+                                                onChangeText={(text) => handleInputChange(field, text)}
                                                 autoCapitalize="none"
                                                 secureTextEntry={(field === "password" || field === "confirmPassword") ? !passwordVisibility[field] : false}
                                                 keyboardType={field === 'tel' ? 'numeric' : field === 'email' ? 'email-address' : 'default'}

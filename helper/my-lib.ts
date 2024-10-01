@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImageManipulator from 'expo-image-manipulator';
 import tw from "twrnc"
 import { Image } from 'react-native';
+import useShowToast from '@/hooks/useShowToast';
+import { router } from 'expo-router';
 
 export const userTokenLogin = "userTokenLogin";
 
@@ -113,3 +115,16 @@ export function getThaiDate() {
     const thailandTime = new Date(date.getTime() + timezoneOffset * 60 * 1000);
     return thailandTime.toISOString();
 }
+
+export const handleErrorMessage = (error: unknown, errorPage?: boolean) => {
+    console.log(error);
+    useShowToast("error", "เกิดข้อผิดพลาด", error as string);
+    if (errorPage) {
+        router.replace({
+            pathname: "/error-page",
+            params: {
+                error: error as string
+            }
+        });
+    }
+};

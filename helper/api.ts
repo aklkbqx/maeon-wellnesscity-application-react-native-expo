@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useShowToast from '@/hooks/useShowToast';
 import { userTokenLogin } from './my-lib';
+import { router } from 'expo-router';
 
 const current_port = "5001";
 const current_ip = "172.20.10.4";
@@ -26,15 +27,4 @@ api.interceptors.request.use(
   }
 );
 
-const handleApiError = (error: unknown) => {
-  if (error instanceof AxiosError && error.response) {
-    useShowToast("error", "เกิดข้อผิดพลาด", error.response.data.message);
-  } else {
-    useShowToast("error", "เกิดข้อผิดพลาด", "โปรดลองอีกครั้งในภายหลัง.");
-  }
-};
-
-export {
-  api,
-  handleApiError
-};
+export default api

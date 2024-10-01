@@ -1,4 +1,5 @@
-import { api, handleApiError } from '@/helper/api';
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import useUser from '@/hooks/useUser';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -17,7 +18,7 @@ const AppUsageTracker = () => {
         try {
             await api.put(`/api/v1/users/update-user-status/${status}`);
         } catch (error) {
-            handleApiError(error);
+            handleErrorMessage("ไม่สามารถเปลี่ยนสถานะการใช้งานได้!");
         }
     }
 

@@ -6,7 +6,8 @@ import tw from 'twrnc';
 import { formatDateThai } from '@/helper/my-lib';
 import { TouchableOpacity } from 'react-native-ui-lib';
 import { Ionicons } from '@expo/vector-icons';
-import { api, apiUrl, handleApiError } from '@/helper/api';
+import api, { apiUrl } from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import Loading from '@/components/Loading';
 import { BlurView } from 'expo-blur';
 import * as Animatable from 'react-native-animatable';
@@ -45,7 +46,7 @@ const TourProgramSelection: React.FC = () => {
         setFilteredProgramTypes(response.data.program_data);
       }
     } catch (error) {
-      handleApiError(error);
+      handleErrorMessage("ไม่สามารถข้อมูลโปรแกรมได้");
     } finally {
       setLoading(false);
     }

@@ -9,7 +9,8 @@ import TextTheme from '@/components/TextTheme';
 import { resizeImage } from '@/helper/my-lib';
 import { useStatusBar } from '@/hooks/useStatusBar';
 import useUser from '@/hooks/useUser';
-import { api, handleApiError } from '@/helper/api';
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import useShowToast from '@/hooks/useShowToast';
 import ProfileSection from '@/components/edit-account/ProfileSection';
 import UserInfoSection from '@/components/edit-account/UserInfoSection';
@@ -51,6 +52,7 @@ const AccountSetting: React.FC = () => {
             const res = await api.get(`/images/user_images/${profile}`);
             setProfileImageUrl(res.request.responseURL);
         } catch {
+            handleErrorMessage("ไม่สามารถโหลดรูปภาพโปรไฟล์ได้");
             setProfileImageUrl(null);
         }
     }, []);
@@ -196,7 +198,7 @@ const AccountSetting: React.FC = () => {
                 useShowToast("error", "เกิดข้อผิดพลาด", response.data.message);
             }
         } catch (error) {
-            handleApiError(error);
+            handleErrorMessage("ไม่สามารถโหลดข้อมูลโปรไฟล์ของคุณได้");
         }
     };
 

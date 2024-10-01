@@ -12,7 +12,8 @@ import { formatDateThai } from '@/helper/my-lib';
 import useUser from '@/hooks/useUser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useShowToast from '@/hooks/useShowToast';
-import { api, handleApiError } from '@/helper/api';
+import api from '@/helper/api';
+import { handleErrorMessage } from '@/helper/my-lib';
 import { ProgramDetail } from '@/types/programs';
 
 interface BookingItem {
@@ -39,7 +40,7 @@ const TravelItineraryScreen: React.FC = () => {
     try {
       return JSON.parse((dataForBooking as string) || '[]');
     } catch {
-      handleApiError('Failed to parse initial dates');
+      handleErrorMessage('มีข้อผิดพลาดบางอย่างเกิดขึ้น');
       return [];
     }
   });
@@ -91,7 +92,7 @@ const TravelItineraryScreen: React.FC = () => {
         },
       });
     } else {
-      handleApiError('Invalid program type selected')
+      handleErrorMessage('ไม่รู้จักประเภทของโปรแกรม')
     }
   };
 
@@ -131,8 +132,7 @@ const TravelItineraryScreen: React.FC = () => {
       await AsyncStorage.setItem('lastTravelItinerary', JSON.stringify(updatedBookingData));
       useShowToast("success", "สำเร็จ", "ลบวันที่เลือกออกจากแผนการท่องเที่ยวแล้ว");
     } catch (error) {
-      handleApiError('Failed to save updated itinerary');
-      useShowToast("error", "ข้อผิดพลาด", "ไม่สามารถบันทึกการเปลี่ยนแปลงได้");
+      handleErrorMessage('ไม่สามารถบันทึกการเปลี่ยนแปลงได้');
     }
   }
 
@@ -252,7 +252,7 @@ const DateItem: React.FC<{
           setProgramData(response.data.programDetail)
         }
       } catch (error) {
-        handleApiError(error);
+        handleErrorMessage("ไม่สามารถโหลดข้อมูลโปรแกรมได้");
       }
     }
   }
@@ -344,7 +344,7 @@ const DateItem: React.FC<{
                           </View>
                         </View>
                       </Dialog>
-                      </>
+                    </>
                   ) : null}
                 </View>
               </View>
