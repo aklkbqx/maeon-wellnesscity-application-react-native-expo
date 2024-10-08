@@ -43,7 +43,7 @@ const AccountSetting: React.FC = () => {
     // User & Profile
     const { checkLoginStatus, fetchUserData } = useUser();
     const [userData, setUserData] = useState<USER_TYPE | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 

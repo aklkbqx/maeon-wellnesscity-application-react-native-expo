@@ -18,7 +18,7 @@ const Login = () => {
     useStatusBar(Platform.OS === "ios" ? "light-content" : "light-content");
     const { backToPage } = useLocalSearchParams();
     const passwordInputRef = useRef<TextInput>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [passwordVisibility, setPasswordVisibility] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 

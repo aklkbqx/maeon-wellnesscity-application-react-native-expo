@@ -52,7 +52,7 @@ const OTPInput: React.FC<{ onOtpChange: (otp: string) => void }> = ({ onOtpChang
 const OTPVerification: React.FC = () => {
     const { phone, backToPage } = useLocalSearchParams<{ phone: string; backToPage: any }>();
     const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const inputRefs = useRef<TextInput[]>([]);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 

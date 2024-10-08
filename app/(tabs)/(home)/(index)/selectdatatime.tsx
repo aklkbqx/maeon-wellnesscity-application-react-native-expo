@@ -36,7 +36,6 @@ const SelectDateTime: React.FC = () => {
     setNumberOfPeople(prevNumber => Math.max(1, prevNumber + increment));
   };
 
-
   const onDayPress = useCallback((day: DateData) => {
     if (!isDateSelectable(day.dateString)) {
       return;
@@ -173,7 +172,7 @@ const SelectDateTime: React.FC = () => {
 
   const renderArrow = (direction: 'left' | 'right'): React.ReactNode => (
     <Ionicons
-      name={direction === 'left' ? 'chevron-back-circle' : 'chevron-forward-circle'}
+      name={direction === 'left' ? 'chevron-back-sharp' : 'chevron-forward-sharp'}
       size={24}
       color={tw.color('blue-500')}
     />
@@ -190,7 +189,6 @@ const SelectDateTime: React.FC = () => {
     );
   };
 
-  const [minDateState, setMinDateState] = useState<string>('');
   const [todyDateState, setTodyDateState] = useState<string>('');
 
   useEffect(() => {
@@ -212,9 +210,6 @@ const SelectDateTime: React.FC = () => {
     }
   };
 
-  const minDate = (): string => {
-    return minDateState;
-  };
 
   const formatDateThaiTypeDate = (date: Date): string => {
     const day = date.getDate();
@@ -252,7 +247,7 @@ const SelectDateTime: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={tw`flex-1 flex-row justify-center items-start bg-white`}>
+      <View style={tw`flex-1 flex-row justify-center items-start bg-slate-100`}>
         <Loading loading={loading} />
       </View>
     )
@@ -266,7 +261,7 @@ const SelectDateTime: React.FC = () => {
           <TextTheme font='Prompt-SemiBold' size='2xl' style={tw`text-slate-700 pt-3`}>เลือกช่วงวัน</TextTheme>
           <View style={tw`flex-row items-center gap-2`}>
             <TextTheme font='Prompt-Light' size='base' style={tw`text-slate-700`}>ที่คุณต้องการจะท่องเที่ยว</TextTheme>
-            <Ionicons name='car' size={20} style={tw`text-blue-700`} />
+            <Ionicons name='calendar' size={20} style={tw`text-blue-500`} />
           </View>
         </View>
 
@@ -276,7 +271,6 @@ const SelectDateTime: React.FC = () => {
             markedDates={markedDates}
             renderArrow={renderArrow}
             renderHeader={renderHeader}
-            minDate={minDate()}
             markingType={markType}
             enableSwipeMonths
             currentDate={todyDateState}

@@ -12,13 +12,11 @@ import Animated, {
     useAnimatedScrollHandler,
     useAnimatedStyle,
     interpolate,
-    interpolateColor,
-    runOnJS,
 } from 'react-native-reanimated';
-import { StatusBar } from "expo-status-bar"
 import { TabController, View, TouchableOpacity } from 'react-native-ui-lib';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useStatusBar } from '@/hooks/useStatusBar';
 
 interface BookingItem {
     people: number;
@@ -31,8 +29,9 @@ interface BookingItem {
 }
 
 const DetailProgramScreen: React.FC = () => {
+    useStatusBar("light-content");
     const { programId, bookingData, dateSelected } = useLocalSearchParams();
-
+    const [programDetail, setProgramDetail] = useState<ProgramDetail | null>(null);
     const [parseJsonBookingData, setParseJsonBookingData] = useState<BookingItem>(() => {
         try {
             return JSON.parse((bookingData as string) || '[]');
@@ -41,8 +40,6 @@ const DetailProgramScreen: React.FC = () => {
             return [];
         }
     });
-    const [programDetail, setProgramDetail] = useState<ProgramDetail | null>(null);
-    const [statusbarStyle, setStatusbarStyle] = useState<"light" | "dark">("light");
 
     const fetchProgramFormId = useCallback(async () => {
         try {
@@ -63,14 +60,9 @@ const DetailProgramScreen: React.FC = () => {
     const IMAGE_WIDTH = '100%';
     const scrollY = useSharedValue(0);
 
-    const updateStatusBarStyle = (isScrolled: boolean) => {
-        setStatusbarStyle(isScrolled ? 'dark' : 'light');
-    };
-
     const scrollHandler = useAnimatedScrollHandler({
         onScroll: (event) => {
             scrollY.value = event.contentOffset.y;
-            runOnJS(updateStatusBarStyle)(event.contentOffset.y > IMAGE_HEIGHT);
         },
     });
 
@@ -123,10 +115,6 @@ const DetailProgramScreen: React.FC = () => {
         }
     };
 
-
-    // selectedDates: JSON.stringify(selectedDatesData),
-    // numberOfPeople
-
     if (!programDetail) {
         return (
             <View style={tw`flex-1 justify-center items-center`}>
@@ -140,7 +128,6 @@ const DetailProgramScreen: React.FC = () => {
 
     return (
         <View style={tw`flex-1 relative`}>
-            <StatusBar style={statusbarStyle} />
             <Stack.Screen options={{
                 headerTransparent: true,
                 headerShown: true,
@@ -243,7 +230,6 @@ const ProgramTabs: React.FC<{ programDetail: ProgramDetail }> = ({ programDetail
                         </TabController.TabPage>
                     </TabController.PageCarousel>
                 </TabController>
-
             </View>
         </View>
     );

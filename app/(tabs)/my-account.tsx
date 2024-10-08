@@ -15,8 +15,7 @@ const MyAccount: React.FC = () => {
   useStatusBar("dark-content");
   const { checkLoginStatus, fetchUserData } = useUser();
   const [userData, setUserData] = useState<USER_TYPE | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [showLoading, setShowLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
@@ -31,26 +30,26 @@ const MyAccount: React.FC = () => {
   }, []);
 
   const initializeUserData = useCallback(async () => {
-    setLoading(true);
     const { login } = await checkLoginStatus();
     if (login) {
+      setLoading(true);
       await fetchUserData(setUserData);
+      setLoading(false);
     }
-    setLoading(false);
   }, [checkLoginStatus, fetchUserData]);
 
   useFocusEffect(useCallback(() => {
     initializeUserData();
-  }, [initializeUserData]))
+  }, [initializeUserData]));
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (userData) {
+      if (userData && !profileImageUrl) {
         await fetchUserProfile(userData.profile_picture);
       }
     };
     fetchProfile();
-  }, [userData, profileImageUrl]);
+  }, [userData, profileImageUrl, fetchUserProfile]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -58,30 +57,15 @@ const MyAccount: React.FC = () => {
     setRefreshing(false);
   }, [initializeUserData]);
 
-  useEffect(() => {
-    let timer: any;
-    if (loading) {
-      timer = setTimeout(() => {
-        setShowLoading(true);
-      }, 1000);
-    } else {
-      setShowLoading(false);
-    }
-
-    return () => clearTimeout(timer);
-  }, [loading, 1000]);
-
-
   if (loading) {
     return (
-      <View style={tw`flex-1 justify-center items-center`}>
+      <View style={tw`flex-1 justify-center items-center bg-slate-100`}>
         <Loading loading={loading} />
       </View>
     )
   } else {
     return (
       <View style={tw`flex-1 bg-slate-100`}>
-
         <ScrollView
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -93,8 +77,8 @@ const MyAccount: React.FC = () => {
             />
           }
         >
-          <View style={[tw`flex-1 shadow-xl pb-5 web:pb-5 rounded-3xl m-2 bg-white mb-20`]}>
-            <ProfileSection loading={loading} showLoading={showLoading} profileImageUrl={profileImageUrl} userData={userData} />
+          <View style={[tw`flex-1 shadow pb-5 web:pb-5 rounded-3xl m-2 bg-white mb-20`]}>
+            <ProfileSection loading={loading} profileImageUrl={profileImageUrl} userData={userData} />
             <View style={tw`border-b-8 border-zinc-200`} />
             {userData ? <MenuSection title="บัญชีของฉัน" type="account" userData={userData} /> : null}
             <MenuSection title="สนับสนุนและเกี่ยวกับ" type="policy" userData={userData} />

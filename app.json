@@ -13,14 +13,27 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "แอพนี้ต้องการเข้าถึงตำแหน่งของคุณเพื่อแสดงตำแหน่งปัจจุบันบนแผนที่",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "แอพนี้ต้องการเข้าถึงตำแหน่งของคุณตลอดเวลาเพื่อติดตามเส้นทางการเดินทางของคุณ",
+        "NSLocationAlwaysUsageDescription": "แอพนี้ต้องการเข้าถึงตำแหน่งของคุณตลอดเวลาเพื่อติดตามเส้นทางการเดินทางของคุณ แม้ในขณะที่แอพทำงานในพื้นหลัง",
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.akalak.maeOnwellnesscity"
+      "package": "com.akalak.maeOnwellnesscity",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",

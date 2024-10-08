@@ -1,5 +1,5 @@
-import { TextInput, TouchableOpacity, View, Dimensions, KeyboardAvoidingView, Platform, ScaledSize, ScrollView, Modal, ActivityIndicator, BackHandler, Keyboard, TouchableWithoutFeedback } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
+import { TextInput, TouchableOpacity, View, KeyboardAvoidingView, Platform, ScrollView, Modal, ActivityIndicator, BackHandler } from 'react-native';
+import React, { useState, useCallback } from 'react';
 import { LogoMaeOn } from '@/components/SvgComponents';
 import TextTheme from '@/components/TextTheme';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -52,7 +52,7 @@ const Register: React.FC = () => {
         password: false,
         confirmPassword: false
     });
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [passwordVisibility, setPasswordVisibility] = useState<{ password: boolean; confirmPassword: boolean }>({ password: false, confirmPassword: false });
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);

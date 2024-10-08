@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react'
-import { router, Tabs, useNavigation } from 'expo-router'
+import React from 'react'
+import { router, Tabs } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { TouchableOpacity, View } from 'react-native-ui-lib'
 import tw from "twrnc"
-import TextTheme from '@/components/TextTheme'
-import { tabbarStyle } from '@/helper/my-lib'
-import { TabBarProvider, useTabBar } from '@/context/TabBarContext'
+import { TabBarProvider, tabbarStyle, useTabBar } from '@/context/TabBarContext'
 import AppUsageTracker from '@/components/AppUsageTracker'
+import useUser from '@/hooks/useUser'
+import useShowToast from '@/hooks/useShowToast'
 
 const TabNavigator = () => {
   const { tabBarStyle } = useTabBar();
+  const { isLogin } = useUser();
   return (
     <>
       <Tabs screenOptions={{
@@ -21,34 +21,40 @@ const TabNavigator = () => {
         tabBarItemStyle: tw`rounded-[5] m-[7px]`,
         headerShadowVisible: true,
       }}
-        safeAreaInsets={{ bottom: 20, left: 0, right: 0, top: 0 }}
+        safeAreaInsets={{ bottom: 0, left: 0, right: 0, top: 0 }}
       >
         <Tabs.Screen
           name="(home)"
           options={{
             headerShown: false,
             title: 'หน้าแรก',
-            tabBarIcon: ({ color, focused }) => <Ionicons size={30} name={focused ? 'home' : 'home-outline'} color={color} />,
+            tabBarIcon: ({ color, focused }) => <Ionicons size={24} name={focused ? 'home' : 'home-outline'} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="travel"
+          name="activity"
           options={{
             headerShown: true,
-            headerTitle: "สถานะการเดินทาง",
-            title: 'เดินทาง',
-            tabBarIcon: ({ color, focused }) => <Ionicons size={30} name={focused ? 'map' : 'map-outline'} color={color} />,
+            headerTitle: "สถานะการเดินทางของฉัน",
+            title: 'รายการล่าสุด',
+            tabBarIcon: ({ color, focused }) => <Ionicons size={24} name={focused ? 'newspaper' : 'newspaper-outline'} color={color} />,
             headerTitleStyle: [tw`text-black text-xl`, { fontFamily: "Prompt-SemiBold" }],
-            headerTitleAlign: "left",
-            headerStyle: [tw`android:h-20 ios:h-23 bg-white`],
-            headerRight: () => (
-              <TouchableOpacity onPress={() => router.navigate("/")} style={tw`pr-4 absolute right-0`}>
-                <View style={tw`items-center gap-1 flex-row bg-slate-100 rounded-3 p-1.5 px-3`}>
-                  <TextTheme color='black' font='Prompt-SemiBold' size='sm' children='ประวัติ' />
-                  <Ionicons name='time' size={20} style={tw`text-black`} />
-                </View>
-              </TouchableOpacity>
-            ),
+            headerTitleAlign: "center",
+            headerStyle: [tw`android:h-20 ios:h-24 bg-white android:border-b android:border-zinc-200`]
+          }}
+          listeners={{
+            tabPress: (event) => {
+              if (!isLogin) {
+                event.preventDefault()
+                router.navigate({
+                  pathname: "/login",
+                  params: {
+                    backToPage: "/activity"
+                  }
+                })
+                useShowToast("info", "", "กรุณาทำการเข้าสู่ระบบก่อน!");
+              }
+            }
           }}
         />
         <Tabs.Screen
@@ -57,10 +63,10 @@ const TabNavigator = () => {
             headerShown: true,
             headerTitle: "รายการแจ้งเตือน",
             title: 'แจ้งเตือน',
-            tabBarIcon: ({ color, focused }) => <Ionicons size={30} name={focused ? 'notifications' : 'notifications-outline'} color={color} />,
+            tabBarIcon: ({ color, focused }) => <Ionicons size={24} name={focused ? 'notifications' : 'notifications-outline'} color={color} />,
             headerTitleStyle: [tw`text-black text-xl`, { fontFamily: "Prompt-SemiBold" }],
             headerTitleAlign: "center",
-            headerStyle: [tw`android:h-20 ios:h-23 bg-white`],
+            headerStyle: [tw`android:h-20 ios:h-24 bg-white android:border-b android:border-zinc-200`],
           }}
         />
         <Tabs.Screen
@@ -69,10 +75,10 @@ const TabNavigator = () => {
             headerShown: true,
             headerTitle: "จัดการบัญชี",
             title: 'บัญชี',
-            tabBarIcon: ({ color, focused }) => <Ionicons size={30} name={focused ? 'person' : 'person-outline'} color={color} />,
+            tabBarIcon: ({ color, focused }) => <Ionicons size={24} name={focused ? 'person' : 'person-outline'} color={color} />,
             headerTitleStyle: [tw`text-black text-xl`, { fontFamily: "Prompt-SemiBold" }],
             headerTitleAlign: "center",
-            headerStyle: [tw`android:h-20 ios:h-23 bg-white`],
+            headerStyle: [tw`android:h-20 ios:h-24 bg-white android:border-b android:border-zinc-200`],
           }}
         />
       </Tabs>

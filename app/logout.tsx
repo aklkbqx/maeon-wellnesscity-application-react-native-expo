@@ -6,10 +6,8 @@ import useShowToast from '@/hooks/useShowToast';
 const Logout: React.FC = () => {
   useStatusBar("dark-content");
   const Logout = async () => {
-    setTimeout(() => {
-      router.replace("/(tabs)/(home)/(index)/");
-      useShowToast("success", "สำเร็จ!", "ออกจากระบบแล้ว 👋");
-    }, 1);
+    router.replace("/(tabs)/(home)/(index)/");
+    useShowToast("success", "สำเร็จ!", "ออกจากระบบแล้ว 👋");
   }
   useEffect(() => {
     Logout()

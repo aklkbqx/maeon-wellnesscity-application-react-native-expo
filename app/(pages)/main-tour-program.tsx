@@ -112,7 +112,7 @@ const TourProgramSelection: React.FC = () => {
             />
           </View>
           <View style={tw`p-4`}>
-            <TextTheme font="Prompt-Medium" style={tw`text-base mb-2`}>{program.name}</TextTheme>
+            <TextTheme font="Prompt-SemiBold" style={tw`text-lg mb-2`}>{program.name}</TextTheme>
             <TextTheme font='Prompt-Light' numberOfLines={2} style={tw`text-gray-600 mb-2`}>{program.description}</TextTheme>
             <View style={tw`flex-row justify-between items-center`}>
               <TextTheme font='Prompt-SemiBold' size='lg' style={tw`text-green-600`}>{program.total_price} บาท</TextTheme>

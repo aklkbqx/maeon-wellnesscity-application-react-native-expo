@@ -91,7 +91,7 @@ const Notifications: React.FC = () => {
         { id: '3', title: 'เตือนความจำ', message: 'นัดประชุมในอีก 30 นาที', read: false },
       ]);
       setIsLoading(false);
-    }, 2000);
+    }, 1000);
   }, []);
 
   const markAsRead = (id: string): void => {

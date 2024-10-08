@@ -16,11 +16,11 @@ const Error_Page = () => {
                 <Ionicons name='alert-circle' size={100} style={[tw`text-red-500/10 absolute bottom-[-25] left-[-20px]`, { transform: [{ rotateZ: '25deg' }] }]} />
                 <View style={tw`flex-col items-center gap-5`}>
                     <View style={tw`text-red-500 w-full flex-col flex-wrap`}>
-                        <TextTheme font="Prompt-Regular" size="lg" style={tw`text-red-700`}>
+                        <TextTheme font="Prompt-Regular" size="2xl" style={tw`text-red-700`}>
                             เกิดข้อผิดพลาด!
                         </TextTheme>
                         <View style={tw`w-[80%] flex-row flex-wrap`}>
-                            <TextTheme font="Prompt-Regular" size="sm" style={tw`text-red-500 text-justify`}>
+                            <TextTheme font="Prompt-Regular" size="base" style={tw`text-red-500 text-justify`}>
                                 {error}
                             </TextTheme>
                         </View>

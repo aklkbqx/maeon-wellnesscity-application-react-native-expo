@@ -6,9 +6,9 @@ import Toast from 'react-native-toast-message';
 import { BackHandler, Platform } from 'react-native';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { InternetProvider } from '@/context/InternetProvider';
 
 export default function RootLayout() {
-
   const navigation = useNavigation()
 
   useEffect(() => {
@@ -38,23 +38,26 @@ export default function RootLayout() {
     <FontLoader>
       <ThemeProvider value={DefaultTheme}>
         <GestureHandlerRootView>
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false, gestureEnabled: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false, gestureEnabled: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false, animation: "slide_from_bottom", presentation: "modal" }} />
-            <Stack.Screen name="logout" options={{
-              animation: "slide_from_bottom",
-              headerShown: false,
-              contentStyle: {
-                backgroundColor: "transparent",
-                backfaceVisibility: "hidden"
-              },
-              presentation: "containedTransparentModal"
-            }} />
-            <Stack.Screen name="(pages)" options={{ headerShown: false, gestureEnabled: false }} />
-            <Stack.Screen name="+not-found" />
-            <Stack.Screen name="error-page" options={{ headerShown: false }} />
-          </Stack>
+          <InternetProvider>
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false, gestureEnabled: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false, gestureEnabled: false }} />
+              <Stack.Screen name="connection-error" options={{ headerShown: false, gestureEnabled: false }} />
+              <Stack.Screen name="(auth)" options={{ headerShown: false, animation: "slide_from_bottom", presentation: "modal" }} />
+              <Stack.Screen name="logout" options={{
+                animation: "slide_from_bottom",
+                headerShown: false,
+                contentStyle: {
+                  backgroundColor: "transparent",
+                  backfaceVisibility: "hidden"
+                },
+                presentation: "containedTransparentModal"
+              }} />
+              <Stack.Screen name="(pages)" options={{ headerShown: false, gestureEnabled: false }} />
+              <Stack.Screen name="+not-found" />
+              <Stack.Screen name="error-page" options={{ headerShown: false }} />
+            </Stack>
+          </InternetProvider>
           <Toast />
         </GestureHandlerRootView>
       </ThemeProvider>

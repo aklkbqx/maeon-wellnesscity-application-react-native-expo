@@ -15,6 +15,8 @@ import useShowToast from '@/hooks/useShowToast';
 import api from '@/helper/api';
 import { handleErrorMessage } from '@/helper/my-lib';
 import { ProgramDetail } from '@/types/programs';
+import { useStatusBar } from '@/hooks/useStatusBar';
+import Loading from '@/components/Loading';
 
 interface BookingItem {
   people: number;
@@ -31,10 +33,12 @@ interface BookingDetail {
 }
 
 const TravelItineraryScreen: React.FC = () => {
+  useStatusBar("dark-content");
   const { dataForBooking } = useLocalSearchParams();
   const { checkLoginStatus } = useUser();
   const [dialoglVisible, setDialoglVisible] = useState(false);
   const [dateSelected, setDateSelected] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
   const [bookingData, setBookingData] = useState<BookingItem>(() => {
     try {
@@ -63,14 +67,12 @@ const TravelItineraryScreen: React.FC = () => {
         const lastItinerary = await AsyncStorage.getItem('lastTravelItinerary');
         if (lastItinerary) {
           setBookingData(JSON.parse(lastItinerary));
-          await AsyncStorage.removeItem('lastTravelItinerary');
         }
-        checkLoginStatus();
       };
 
       restoreState();
       return () => BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
-    }, [handleBackPress, checkLoginStatus])
+    }, [handleBackPress])
   );
 
   const selectedTypeProgram = (programtypeId: number) => {
@@ -104,6 +106,7 @@ const TravelItineraryScreen: React.FC = () => {
 
 
   const handleProceedBooking = async () => {
+    setLoading(true);
     const { login } = await checkLoginStatus();
     if (!login) {
       await AsyncStorage.setItem('lastTravelItinerary', JSON.stringify(bookingData));
@@ -114,8 +117,28 @@ const TravelItineraryScreen: React.FC = () => {
         }
       });
       useShowToast("info", "คำแนะนำ", "กรุณาเข้าสู่ระบบก่อนทำการจอง");
+      setLoading(false);
     } else {
-      // console.log('Proceeding with booking...', formattedData);
+      try {
+        const response = await api.post("/api/v1/bookings/start-booking", { ...bookingData });
+        if (response.data.success) {
+          router.navigate({
+            pathname: '/payment',
+            params: {
+              bookingId: response.data.booking_id
+            }
+          });
+          const lastTravelItinerary = await AsyncStorage.getItem('lastTravelItinerary');
+          if (lastTravelItinerary) {
+            await AsyncStorage.removeItem('lastTravelItinerary');
+          }
+        }
+      } catch {
+        setLoading(false);
+        handleErrorMessage("ไม่สามารถดำเนินการจองได้ในขณะนี้ โปรดลองใหม่อีกครั้ง");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -143,24 +166,30 @@ const TravelItineraryScreen: React.FC = () => {
 
   return (
     <View style={tw`flex-1 relative bg-slate-100`}>
+      {loading && <Loading loading={loading} type='full' />}
+      
       <ScrollView style={tw`flex-1 px-4`}>
         <View style={tw`mb-6 mt-5 relative`}>
-          {bookingData.booking_detail.map((item, index) => (
-            <DateItem
-              key={index}
-              item={item}
-              index={index}
-              onPress={() => handleProgramSelection(item.date)}
-              onDetailsPress={() => { }}
-              isLast={index === bookingData.booking_detail.length - 1}
-              handelDeleteDate={() => handelDeleteDate(item.date)}
-              length={bookingData.booking_detail.length}
-            />
-          ))}
+          {bookingData.booking_detail && bookingData.booking_detail.length > 0 ? (
+            bookingData.booking_detail.map((item, index) => (
+              <DateItem
+                key={index}
+                item={item}
+                index={index}
+                onPress={() => handleProgramSelection(item.date)}
+                onDetailsPress={() => { }}
+                isLast={index === bookingData.booking_detail.length - 1}
+                handelDeleteDate={() => handelDeleteDate(item.date)}
+                length={bookingData.booking_detail.length}
+              />
+            ))
+          ) : (
+            <TextTheme style={tw`text-center mt-4`}>ไม่มีข้อมูลการจองในขณะนี้</TextTheme>
+          )}
         </View>
       </ScrollView>
 
-      <View style={tw`p-4 mb-5`}>
+      <View style={tw`p-4 mb-2`}>
         <TouchableOpacity style={tw`${bookingData.booking_detail.every((date) => date.program_id) ? 'opacity-100' : 'opacity-50'}`}
           disabled={!bookingData.booking_detail.every((date) => date.program_id)}
           onPress={handleProceedBooking}>

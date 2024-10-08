@@ -14,7 +14,6 @@ export const base64ToFile = async (dataUrl: string, fileName: string): Promise<F
     return new File([blob], fileName, { type: fileType });
 }
 
-
 export const resizeImage = async (uri: string, img_w: number, img_h: number): Promise<ImageManipulator.ImageResult> => {
     return new Promise((resolve, reject) => {
         Image.getSize(
@@ -72,8 +71,6 @@ export const saveTokenAndLogin = async (token: string) => {
         console.error('Error saving token:', error);
     }
 };
-
-export const tabbarStyle = tw`shadow bg-white rounded-t-3xl absolute w-full h-[80px] bottom-0 border-t-0`;
 
 export const formatDate = (dateString: string) => {
     const [year, month, day] = dateString.split('-');

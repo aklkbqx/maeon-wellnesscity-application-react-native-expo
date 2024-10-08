@@ -1,5 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useRef } from 'react';
 import { ViewStyle, Animated } from 'react-native';
+import tw from "twrnc"
+
+export const tabbarStyle = tw`android:shadow-sm ios:shadow-md bg-white rounded-3xl absolute w-[95%] h-[60px] bottom-5 border-t-0 left-[2.5%]`;
 
 interface TabBarContextType {
   isVisible: boolean;

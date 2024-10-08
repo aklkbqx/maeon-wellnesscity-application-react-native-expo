@@ -1,11 +1,9 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import useShowToast from '@/hooks/useShowToast';
 import { userTokenLogin } from './my-lib';
-import { router } from 'expo-router';
 
 const current_port = "5001";
-const current_ip = "172.20.10.4";
+const current_ip = "172.20.10.3";
 export const apiUrl = `http://${current_ip}:${current_port}`;
 
 const api = axios.create({

@@ -4,13 +4,10 @@ import Toast from 'react-native-toast-message'
 
 const RootRegister = () => {
   return (
-    <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name='index' />
-        <Stack.Screen name='optverify' />
-      </Stack>
-      <Toast />
-    </>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name='index' />
+      <Stack.Screen name='optverify' />
+    </Stack>
   )
 }
 

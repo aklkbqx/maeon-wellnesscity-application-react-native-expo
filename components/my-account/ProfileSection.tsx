@@ -10,10 +10,9 @@ interface ProfileType {
     profileImageUrl: string | null;
     userData: USER_TYPE | null;
     loading: boolean;
-    showLoading: boolean;
 }
 
-const ProfileSection: React.FC<ProfileType> = ({ profileImageUrl, userData, loading, showLoading }) => {
+const ProfileSection: React.FC<ProfileType> = ({ profileImageUrl, userData, loading }) => {
     return (
         <View style={tw`p-5 flex-row items-center gap-4`}>
             <View style={[tw`w-[80px] h-[80px] rounded-full bg-zinc-300 items-center justify-center`]}>
