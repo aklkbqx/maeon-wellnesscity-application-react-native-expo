@@ -105,7 +105,7 @@ const DetailProgramScreen: React.FC = () => {
             await AsyncStorage.setItem('lastTravelItinerary', JSON.stringify(updatedBookingData));
 
             router.navigate({
-                pathname: "/travel-itinerary",
+                pathname: "/travel-schedules",
                 params: {
                     dataForBooking: JSON.stringify(updatedBookingData)
                 }
@@ -132,7 +132,7 @@ const DetailProgramScreen: React.FC = () => {
                 headerTransparent: true,
                 headerShown: true,
                 header: () => (
-                    <Animated.View style={tw`w-full ios:pt-14 android:pt-7.5 pb-1 justify-between flex-row px-5 items-center gap-2`}>
+                    <View style={tw`w-full ios:pt-14 android:pt-7.5 pb-1 justify-between flex-row px-5 items-center gap-2`}>
                         <TouchableOpacity onPress={() => router.back()} style={tw`bg-black/60 p-2 rounded-full overflow-hidden`}>
                             <Ionicons name="chevron-back" size={24} color={tw.color('white')} />
                         </TouchableOpacity>
@@ -144,7 +144,7 @@ const DetailProgramScreen: React.FC = () => {
                                 <Ionicons name="heart-outline" size={24} color={tw.color('white')} />
                             </TouchableOpacity>
                         </View>
-                    </Animated.View>
+                    </View>
                 )
             }} />
 

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { router, Tabs } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import tw from "twrnc"
@@ -9,7 +9,22 @@ import useShowToast from '@/hooks/useShowToast'
 
 const TabNavigator = () => {
   const { tabBarStyle } = useTabBar();
-  const { isLogin } = useUser();
+  const { checkLoginStatus } = useUser();
+
+  const checkLogin = async (event: any) => {
+    const { login } = await checkLoginStatus();
+    if (!login) {
+      event.preventDefault()
+      router.navigate({
+        pathname: "/login",
+        params: {
+          backToPage: "/activity"
+        }
+      })
+      useShowToast("info", "", "กรุณาทำการเข้าสู่ระบบก่อน!");
+    }
+  };
+
   return (
     <>
       <Tabs screenOptions={{
@@ -44,16 +59,7 @@ const TabNavigator = () => {
           }}
           listeners={{
             tabPress: (event) => {
-              if (!isLogin) {
-                event.preventDefault()
-                router.navigate({
-                  pathname: "/login",
-                  params: {
-                    backToPage: "/activity"
-                  }
-                })
-                useShowToast("info", "", "กรุณาทำการเข้าสู่ระบบก่อน!");
-              }
+              checkLogin(event)
             }
           }}
         />

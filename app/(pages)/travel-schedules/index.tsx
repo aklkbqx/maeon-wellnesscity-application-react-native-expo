@@ -38,7 +38,7 @@ const TravelItineraryScreen: React.FC = () => {
   const { checkLoginStatus } = useUser();
   const [dialoglVisible, setDialoglVisible] = useState(false);
   const [dateSelected, setDateSelected] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [bookingData, setBookingData] = useState<BookingItem>(() => {
     try {
@@ -79,7 +79,7 @@ const TravelItineraryScreen: React.FC = () => {
     setDialoglVisible(false);
     if (programtypeId === 1 || programtypeId === 2) {
       router.navigate({
-        pathname: '/main-tour-program',
+        pathname: '/main-program',
         params: {
           bookingData: JSON.stringify(bookingData),
           dateSelected
@@ -87,7 +87,7 @@ const TravelItineraryScreen: React.FC = () => {
       });
     } else if (programtypeId === 3) {
       router.navigate({
-        pathname: '/(custom-tour-program)',
+        pathname: '/custom-program/category',
         params: {
           bookingData: JSON.stringify(bookingData),
           dateSelected
@@ -113,7 +113,7 @@ const TravelItineraryScreen: React.FC = () => {
       router.navigate({
         pathname: '/login',
         params: {
-          backToPage: "/travel-itinerary"
+          backToPage: "/travel-schedules"
         }
       });
       useShowToast("info", "คำแนะนำ", "กรุณาเข้าสู่ระบบก่อนทำการจอง");
@@ -122,12 +122,17 @@ const TravelItineraryScreen: React.FC = () => {
       try {
         const response = await api.post("/api/v1/bookings/start-booking", { ...bookingData });
         if (response.data.success) {
-          router.navigate({
-            pathname: '/payment',
-            params: {
-              bookingId: response.data.booking_id
-            }
+          const initiate = await api.post("/api/v1/payments/create-payment", {
+            booking_id: response.data.booking_id
           });
+          if (initiate.data.success) {
+            router.navigate({
+              pathname: '/payments',
+              params: {
+                bookingId: response.data.booking_id
+              }
+            });
+          }
           const lastTravelItinerary = await AsyncStorage.getItem('lastTravelItinerary');
           if (lastTravelItinerary) {
             await AsyncStorage.removeItem('lastTravelItinerary');
@@ -143,22 +148,6 @@ const TravelItineraryScreen: React.FC = () => {
   };
 
 
-  const handelDeleteDate = async (date: string) => {
-    const updatedBookingData = {
-      ...bookingData,
-      booking_detail: bookingData.booking_detail.filter(item => item.date !== date)
-    };
-
-    setBookingData(updatedBookingData);
-
-    try {
-      await AsyncStorage.setItem('lastTravelItinerary', JSON.stringify(updatedBookingData));
-      useShowToast("success", "สำเร็จ", "ลบวันที่เลือกออกจากแผนการท่องเที่ยวแล้ว");
-    } catch (error) {
-      handleErrorMessage('ไม่สามารถบันทึกการเปลี่ยนแปลงได้');
-    }
-  }
-
   const handleProgramSelection = (date: string) => {
     setDateSelected(date);
     setDialoglVisible(true);
@@ -167,7 +156,7 @@ const TravelItineraryScreen: React.FC = () => {
   return (
     <View style={tw`flex-1 relative bg-slate-100`}>
       {loading && <Loading loading={loading} type='full' />}
-      
+
       <ScrollView style={tw`flex-1 px-4`}>
         <View style={tw`mb-6 mt-5 relative`}>
           {bookingData.booking_detail && bookingData.booking_detail.length > 0 ? (
@@ -179,7 +168,6 @@ const TravelItineraryScreen: React.FC = () => {
                 onPress={() => handleProgramSelection(item.date)}
                 onDetailsPress={() => { }}
                 isLast={index === bookingData.booking_detail.length - 1}
-                handelDeleteDate={() => handelDeleteDate(item.date)}
                 length={bookingData.booking_detail.length}
               />
             ))
@@ -267,9 +255,8 @@ const DateItem: React.FC<{
   onPress: () => void;
   onDetailsPress: () => void;
   isLast: boolean;
-  handelDeleteDate: () => void;
   length: number
-}> = ({ item, index, onPress, onDetailsPress, isLast, handelDeleteDate, length }) => {
+}> = ({ item, index, onPress, onDetailsPress, isLast, length }) => {
   const [programData, setProgramData] = useState<ProgramDetail>();
   const [dialogDeleteDate, setDialogDeleteDate] = useState<boolean>(false);
 
@@ -341,40 +328,6 @@ const DateItem: React.FC<{
                       </TextTheme>
                     </TouchableOpacity>
                   </View>
-                  {length !== 1 ? (
-                    <>
-                      <TouchableOpacity onPress={() => setDialogDeleteDate(true)} style={tw`mt-2 flex-row justify-center`}>
-                        <Ionicons name='trash' size={18} color={String(tw.color("red-500"))} />
-                      </TouchableOpacity>
-
-                      <Dialog
-                        visible={dialogDeleteDate}
-                        onDismiss={() => setDialogDeleteDate(false)}
-                        panDirection={PanningProvider.Directions.RIGHT}
-                      >
-                        <View style={tw`flex-row justify-center`}>
-                          <View style={tw`w-[70%] rounded-2xl overflow-hidden`}>
-                            <View style={tw`border-b border-zinc-200 p-2 bg-white`}>
-                              <TextTheme>ยืนยันการลบ!</TextTheme>
-                            </View>
-                            <View style={tw`p-5 bg-slate-50`}>
-                              <TextTheme style={tw`text-center`}>
-                                {"คุณแน่ใจหรือไม่ที่จะลบวันนี้ออกจากแผนการท่องเที่ยว"}
-                              </TextTheme>
-                            </View>
-                            <View style={tw`border-t flex-row justify-between border-zinc-200 p-2 gap-2 bg-white`}>
-                              <TouchableOpacity onPress={() => setDialogDeleteDate(false)} style={tw`flex-1 bg-zinc-200 rounded-xl justify-center flex-row p-1`}>
-                                <TextTheme>ยกเลิก</TextTheme>
-                              </TouchableOpacity>
-                              <TouchableOpacity onPress={handelDeleteDate} style={tw`flex-1 bg-red-500 rounded-xl justify-center flex-row p-1`}>
-                                <TextTheme style={tw`text-white`}>ลบ</TextTheme>
-                              </TouchableOpacity>
-                            </View>
-                          </View>
-                        </View>
-                      </Dialog>
-                    </>
-                  ) : null}
                 </View>
               </View>
             )}

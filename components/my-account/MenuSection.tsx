@@ -27,7 +27,7 @@ const menuList: MenuList = {
         {
             text: "ข้อมูลส่วนตัว",
             iconname: "person",
-            link: "/edit-account"
+            link: "/account/edit-account"
         },
         {
             text: "สิ่งที่ถูกใจ",

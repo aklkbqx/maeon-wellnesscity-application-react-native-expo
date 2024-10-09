@@ -9,16 +9,18 @@ import tw from "twrnc"
 import { Ionicons } from '@expo/vector-icons'
 import useShowToast from '@/hooks/useShowToast'
 import api from '@/helper/api';
-import { handleErrorMessage } from '@/helper/my-lib';
+import { handleAxiosError, handleErrorMessage } from '@/helper/my-lib';
 import useRoleNavigation from '@/hooks/useRoleNavigation'
 import { saveTokenAndLogin } from '@/helper/my-lib'
 import { LinearGradient } from 'expo-linear-gradient'
+import axios, { AxiosError } from 'axios'
+import { ErrorResponse } from '@/types/types'
 
 const Login = () => {
     useStatusBar(Platform.OS === "ios" ? "light-content" : "light-content");
     const { backToPage } = useLocalSearchParams();
     const passwordInputRef = useRef<TextInput>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [passwordVisibility, setPasswordVisibility] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
@@ -90,7 +92,9 @@ const Login = () => {
                 }
             }, 1000);
         } catch (error) {
-            handleErrorMessage("ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง");
+            handleAxiosError(error, (message) => {
+                handleErrorMessage(message);
+            });
             setModalVisible(false);
             setLoading(false);
         } finally {
@@ -113,11 +117,11 @@ const Login = () => {
     const handleToRegister = () => {
         if (backToPage) {
             router.navigate({
-                pathname: "/(register)",
+                pathname: "/register",
                 params: { backToPage }
             })
         } else {
-            router.navigate("/(register)")
+            router.navigate("/register")
         }
     }
 

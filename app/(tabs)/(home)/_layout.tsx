@@ -1,5 +1,5 @@
 import { TouchableOpacity, Image } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { router, Stack, useFocusEffect, useNavigation } from 'expo-router'
 import TextTheme from '@/components/TextTheme'
 import tw from "twrnc"
@@ -26,12 +26,16 @@ const SkeletonLoader: React.FC<{ width: number; height: number; borderRadius: nu
 
 const RootHome = () => {
     useStatusBar("dark-content");
-    const navigation = useNavigation();
+
+    // State
     const [showCalendar, setShowCalendar] = useState<boolean>(false);
     const { checkLoginStatus, fetchUserData } = useUser();
     const [userData, setUserData] = useState<USER_TYPE | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+
+    // Refs
+    const profileImage = useRef("");
 
     const toggleView = useCallback(() => {
         router.navigate(!showCalendar ? "/selectdatatime" : "/");
@@ -42,6 +46,7 @@ const RootHome = () => {
         try {
             const res = await api.get(`/images/user_images/${profile}`);
             setProfileImageUrl(res.request.responseURL);
+            profileImage.current = profile
         } catch {
             handleErrorMessage("ไม่สามารถโหลดรูปภาพโปรไฟล์ได้");
             setProfileImageUrl(null);
@@ -64,13 +69,10 @@ const RootHome = () => {
     );
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            if (userData && !profileImageUrl) {
-                await fetchUserProfile(userData.profile_picture);
-            }
-        };
-        fetchProfile();
-    }, [userData, profileImageUrl, fetchUserProfile]);
+        if (userData && (profileImage.current !== userData.profile_picture)) {
+            fetchUserProfile(userData.profile_picture);
+        }
+    }, [userData])
 
     const renderContent = () => {
         if (loading) {
@@ -116,7 +118,7 @@ const RootHome = () => {
                         </View>
                     ) : (
                         <View style={tw`flex-row gap-2`}>
-                            <TouchableOpacity onPress={() => router.navigate("/(register)")}>
+                            <TouchableOpacity onPress={() => router.navigate("/register")}>
                                 <LinearGradient style={tw`p-1 px-2 rounded-xl`} colors={[String(tw.color("white")), String(tw.color("slate-200"))]}>
                                     <TextTheme size='base' color='slate-700'>
                                         ลงทะเบียน

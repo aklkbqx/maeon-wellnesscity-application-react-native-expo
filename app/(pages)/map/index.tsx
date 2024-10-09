@@ -5,7 +5,7 @@ const Map = () => {
     const destination = {
         latitude: 15.711767694895597,
         longitude: 100.13006711822914,
-        keyword: "วิทยาลัยอาชีวะนครสวรรค์"
+        keyword: "บ้านแม่กำปอง"
     };
     return (
         <MapTracking

@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import tw from "twrnc";
 import TextTheme from '@/components/TextTheme';
-import { resizeImage } from '@/helper/my-lib';
+import { handleAxiosError, resizeImage } from '@/helper/my-lib';
 import { useStatusBar } from '@/hooks/useStatusBar';
 import useUser from '@/hooks/useUser';
 import api from '@/helper/api';
@@ -39,11 +39,11 @@ const AccountSetting: React.FC = () => {
         currentPassword: false, newPassword: false, confirmPassword: false
     });
     const [passwordsMatch, setPasswordsMatch] = useState(true);
+    const [imageLoading, setImageLoading] = useState<boolean>(false);
 
     // User & Profile
     const { checkLoginStatus, fetchUserData } = useUser();
     const [userData, setUserData] = useState<USER_TYPE | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
@@ -58,12 +58,10 @@ const AccountSetting: React.FC = () => {
     }, []);
 
     const initializeUserData = useCallback(async () => {
-        setLoading(true)
         const { login } = await checkLoginStatus();
         if (login) {
             await fetchUserData(setUserData);
         }
-        setLoading(false)
     }, [])
 
     useFocusEffect(useCallback(() => {
@@ -94,7 +92,9 @@ const AccountSetting: React.FC = () => {
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         await initializeUserData();
-        setRefreshing(false);
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 1000)
     }, []);
 
     useEffect(() => {
@@ -110,9 +110,11 @@ const AccountSetting: React.FC = () => {
         });
 
         if (!result.canceled) {
+            setImageLoading(true);
             const resizedImage = await resizeImage(result.assets[0].uri, 256, 256);
             await prepareImageForUpload(resizedImage.uri);
             setProfileImageUrl(resizedImage.uri);
+            setImageLoading(false);
         }
     };
 
@@ -130,8 +132,7 @@ const AccountSetting: React.FC = () => {
             };
             setPrepareProfileImage(preparedImage as any);
         } catch (error) {
-            console.error("Error preparing image:", error);
-            useShowToast("error", "เกิดข้อผิดพลาด", "ไม่สามารถเตรียมรูปภาพได้");
+            handleErrorMessage('ไม่สามารถเตรียมรูปภาพได้');
         }
     };
 
@@ -198,7 +199,9 @@ const AccountSetting: React.FC = () => {
                 useShowToast("error", "เกิดข้อผิดพลาด", response.data.message);
             }
         } catch (error) {
-            handleErrorMessage("ไม่สามารถโหลดข้อมูลโปรไฟล์ของคุณได้");
+            handleAxiosError(error, (message) => {
+                handleErrorMessage(message);
+            });
         }
     };
 
@@ -231,93 +234,68 @@ const AccountSetting: React.FC = () => {
         }
         return tw`${baseStyle}`;
     };
-
-    const [showLoading, setShowLoading] = useState(false);
-    useEffect(() => {
-        let timer: any;
-        if (loading) {
-            timer = setTimeout(() => {
-                setShowLoading(true);
-            }, 1000);
-        } else {
-            setShowLoading(false);
-        }
-
-        return () => clearTimeout(timer);
-    }, [loading, 1000]);
-
-
-    if (loading) {
-        return (
-            <View style={tw`flex-1 justify-center items-center`}>
-                <Loading loading={loading} />
-            </View>
-        )
-    } else {
-        return (
-            <>
-                {/* {loading ? <Loading loading={loading} type='full' /> : null} */}
-                <KeyboardAvoidingView behavior="padding" style={tw`bg-white flex-1`} keyboardVerticalOffset={85}>
-                    <ScrollView
-                        showsVerticalScrollIndicator={false}
-                        ref={scrollViewRef}
-                        style={tw`px-5`}
-                        scrollEventThrottle={16}
-                        refreshControl={
-                            <RefreshControl
-                                refreshing={refreshing}
-                                onRefresh={onRefresh}
-                                colors={[tw.color("text-blue-600") as string]}
-                                tintColor={tw.color("text-blue-600") as string}
-                            />
-                        }
-                    >
-                        <ProfileSection profileImageUrl={profileImageUrl} pickImage={pickImage} userData={userData} />
-                        <UserInfoSection formDataInput={formDataInput} setFormDataInput={setFormDataInput} userData={userData} />
-                        <View style={tw`mt-2`}>
-                            <View style={tw`flex-row gap-2`}>
-                                <Ionicons name='lock-closed' size={20} />
-                                <TextTheme font='Prompt-SemiBold' size='xl'>เปลี่ยนรหัสผ่าน</TextTheme>
-                            </View>
-                            <View style={tw`overflow-hidden rounded-2xl gap-1 mt-2`}>
-                                {(['currentPassword', 'newPassword', 'confirmPassword'] as const).map((field, index) => (
-                                    <View key={`${field}-${index}`} style={tw`relative`}>
-                                        <TextInput
-                                            style={[getInputStyle(field as 'newPassword' | 'confirmPassword'), { fontFamily: "Prompt-Regular" }]}
-                                            placeholder={field === 'currentPassword' ? 'รหัสผ่านเดิม' : (field === 'newPassword' ? 'รหัสผ่านใหม่' : 'ยืนยันรหัสผ่านอีกครั้ง')}
-                                            placeholderTextColor="#a1a1aa"
-                                            value={formDataInput[field]}
-                                            onChangeText={(text) => handleChangeText(field, text)}
-                                            autoCapitalize="none"
-                                            secureTextEntry={!passwordVisibility[field]}
-                                            textContentType='oneTimeCode'
-                                        />
-                                        {formDataInput[field] && (
-                                            <TouchableOpacity onPress={() => togglePasswordVisibility(field)} style={tw`absolute top-3 right-3 z-9 flex-row gap-2`}>
-                                                <Ionicons size={25} name={!passwordVisibility[field] ? "eye" : "eye-off"} style={tw`text-blue-700`} />
-                                            </TouchableOpacity>
-                                        )}
-                                    </View>
-                                ))}
-                                {!passwordsMatch && (
-                                    <View style={tw`mt-1 ml-1`}>
-                                        <TextTheme style={tw`text-red-500 text-sm`}>รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน</TextTheme>
-                                    </View>
-                                )}
-                            </View>
-                        </View>
-                        <ActionButtons
-                            handleCancel={handleCancel}
-                            handleSaveProfile={handleSaveProfile}
-                            loadingCancel={loadingCancel}
-                            modalVisible={modalVisible}
+    return (
+        <>
+            <KeyboardAvoidingView behavior="padding" style={tw`bg-white flex-1`} keyboardVerticalOffset={85}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    ref={scrollViewRef}
+                    style={tw`px-5`}
+                    scrollEventThrottle={16}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            colors={[tw.color("text-blue-500") as string]}
+                            tintColor={tw.color("text-blue-500") as string}
                         />
-                    </ScrollView>
-                </KeyboardAvoidingView>
-                <OverlayComponents refreshing={refreshing} modalVisible={modalVisible} setModalVisible={setModalVisible} />
-            </>
-        );
-    }
+                    }
+                >
+                    <ProfileSection imageLoading={imageLoading} profileImageUrl={profileImageUrl} pickImage={pickImage} userData={userData} />
+                    <UserInfoSection formDataInput={formDataInput} setFormDataInput={setFormDataInput} userData={userData} />
+                    <View style={tw`mt-2`}>
+                        <View style={tw`flex-row gap-2`}>
+                            <Ionicons name='lock-closed' size={20} />
+                            <TextTheme font='Prompt-SemiBold' size='xl'>เปลี่ยนรหัสผ่าน</TextTheme>
+                        </View>
+                        <View style={tw`overflow-hidden rounded-2xl gap-1 mt-2`}>
+                            {(['currentPassword', 'newPassword', 'confirmPassword'] as const).map((field, index) => (
+                                <View key={`${field}-${index}`} style={tw`relative`}>
+                                    <TextInput
+                                        style={[getInputStyle(field as 'newPassword' | 'confirmPassword'), { fontFamily: "Prompt-Regular" }]}
+                                        placeholder={field === 'currentPassword' ? 'รหัสผ่านเดิม' : (field === 'newPassword' ? 'รหัสผ่านใหม่' : 'ยืนยันรหัสผ่านอีกครั้ง')}
+                                        placeholderTextColor="#a1a1aa"
+                                        value={formDataInput[field]}
+                                        onChangeText={(text) => handleChangeText(field, text)}
+                                        autoCapitalize="none"
+                                        secureTextEntry={!passwordVisibility[field]}
+                                        textContentType='oneTimeCode'
+                                    />
+                                    {formDataInput[field] && (
+                                        <TouchableOpacity onPress={() => togglePasswordVisibility(field)} style={tw`absolute top-3 right-3 z-9 flex-row gap-2`}>
+                                            <Ionicons size={25} name={!passwordVisibility[field] ? "eye" : "eye-off"} style={tw`text-blue-700`} />
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            ))}
+                            {!passwordsMatch && (
+                                <View style={tw`mt-1 ml-1`}>
+                                    <TextTheme style={tw`text-red-500 text-sm`}>รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน</TextTheme>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                    <ActionButtons
+                        handleCancel={handleCancel}
+                        handleSaveProfile={handleSaveProfile}
+                        loadingCancel={loadingCancel}
+                        modalVisible={modalVisible}
+                    />
+                </ScrollView>
+            </KeyboardAvoidingView>
+            <OverlayComponents refreshing={refreshing} modalVisible={modalVisible} setModalVisible={setModalVisible} />
+        </>
+    );
 };
 
 export default AccountSetting;

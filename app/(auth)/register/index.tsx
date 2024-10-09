@@ -7,10 +7,12 @@ import { useStatusBar } from '@/hooks/useStatusBar';
 import tw from "twrnc";
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/helper/api';
-import { handleErrorMessage } from '@/helper/my-lib';
+import { handleAxiosError, handleErrorMessage } from '@/helper/my-lib';
 import useShowToast from '@/hooks/useShowToast';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
+import axios, { AxiosError } from 'axios';
+import { ErrorResponse } from '@/types/types';
 
 interface FormData {
     firstname: string;
@@ -52,7 +54,7 @@ const Register: React.FC = () => {
         password: false,
         confirmPassword: false
     });
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [passwordVisibility, setPasswordVisibility] = useState<{ password: boolean; confirmPassword: boolean }>({ password: false, confirmPassword: false });
     const [isFormValid, setIsFormValid] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -126,7 +128,7 @@ const Register: React.FC = () => {
             if (response.data.success) {
                 if (backToPage) {
                     router.navigate({
-                        pathname: "/optverify",
+                        pathname: "/register/optverify",
                         params: {
                             phone: tel,
                             backToPage
@@ -134,7 +136,7 @@ const Register: React.FC = () => {
                     });
                 } else {
                     router.navigate({
-                        pathname: "/optverify",
+                        pathname: "/register/optverify",
                         params: { phone: tel }
                     });
                 }
@@ -144,7 +146,9 @@ const Register: React.FC = () => {
                 throw new Error(response.data.error || 'เกิดข้อผิดพลาดในการลงทะเบียน');
             }
         } catch (error) {
-            handleErrorMessage("ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่อีกครั้ง");
+            handleAxiosError(error, (message) => {
+                handleErrorMessage(message);
+            });
             setModalVisible(false);
         } finally {
             setLoading(false);

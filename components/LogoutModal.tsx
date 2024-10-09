@@ -24,7 +24,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ isVisible, onClose, onLogout 
             onClose();
         }, 1000);
         setTimeout(() => {
-            router.replace('/logout');
+            router.replace('/(home)');
             useShowToast("success", "สำเร็จ!", "ออกจากระบบแล้ว 👋");
         }, 1000);
     };

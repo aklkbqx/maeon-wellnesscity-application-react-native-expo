@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImageManipulator from 'expo-image-manipulator';
-import tw from "twrnc"
+import axios, { AxiosError } from 'axios';
 import { Image } from 'react-native';
 import useShowToast from '@/hooks/useShowToast';
 import { router } from 'expo-router';
@@ -123,5 +123,55 @@ export const handleErrorMessage = (error: unknown, errorPage?: boolean) => {
                 error: error as string
             }
         });
+    }
+};
+
+
+
+interface ErrorResponse {
+    success: boolean;
+    message: string;
+    error?: string;
+}
+
+/**
+ * Handles Axios errors and other errors, providing appropriate error messages.
+ * 
+ * @param error - The error object to handle
+ * @param handleErrorMessage - A function to handle displaying error messages to the user
+ * @returns The error message
+ */
+export const handleAxiosError = (error: unknown, handleErrorMessage: (message: string) => void): string => {
+    if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<ErrorResponse>;
+        if (axiosError.response) {
+            console.error('Response data:', axiosError.response.data);
+            console.error('Response status:', axiosError.response.status);
+            console.error('Response headers:', axiosError.response.headers);
+
+            const errorMessage = axiosError.response.data?.message || "เกิดข้อผิดพลาดในการดำเนินการ";
+
+            if (errorMessage.includes("ข้อมูลผู้รับเงินไม่ตรงกับที่ระบุในระบบ")) {
+                handleErrorMessage(errorMessage);
+            } else {
+                handleErrorMessage(errorMessage);
+            }
+            return errorMessage;
+        } else if (axiosError.request) {
+            console.error('Request error:', axiosError.request);
+            const errorMessage = "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง";
+            handleErrorMessage(errorMessage);
+            return errorMessage;
+        } else {
+            console.error('Error message:', axiosError.message);
+            const errorMessage = "เกิดข้อผิดพลาดในการส่งคำขอ กรุณาลองใหม่อีกครั้ง";
+            handleErrorMessage(errorMessage);
+            return errorMessage;
+        }
+    } else {
+        console.error('Non-Axios error:', error);
+        const errorMessage = "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาลองใหม่อีกครั้ง";
+        handleErrorMessage(errorMessage);
+        return errorMessage;
     }
 };

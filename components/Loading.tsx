@@ -12,7 +12,7 @@ interface LoadingProps extends Omit<ActivityIndicatorProps, 'color'> {
 
 const Loading: React.FC<LoadingProps> = ({
     type = "component",
-    color = String(tw`text-blue-500`.color),
+    color = String(tw`text-blue-400`.color),
     loading,
     ...props
 }) => {

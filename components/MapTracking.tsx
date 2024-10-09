@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { View, Dimensions, Animated, Platform, Linking } from 'react-native';
+import { View, Dimensions, Animated, Platform, Linking, Image } from 'react-native';
 import MapView, { Marker, Polyline, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
 import tw from "twrnc";
 import { router, Stack } from 'expo-router';
 import { TouchableOpacity } from 'react-native-ui-lib';
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useStatusBar } from '@/hooks/useStatusBar';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 import TextTheme from '@/components/TextTheme';
 import { ScrollView } from 'react-native-gesture-handler';
 import { handleErrorMessage } from '@/helper/my-lib';
@@ -16,6 +15,8 @@ import axios from 'axios';
 import { calculateDistance, formatDistance, getTurnDirection, getTurnIcon } from '@/helper/utiles';
 import RenderRouteDetails from './MapTracking/RenderRouteDetails';
 import debounce from 'lodash/debounce';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 
 // Types
 interface Coordinate {
@@ -70,7 +71,6 @@ const API_KEY = "c829ec7870e7bca96c609f6c92119eee"; // Longdo Map API key
 
 // MapTracking Component
 const MapTracking: React.FC<MapTrackingProps> = ({ destination }) => {
-    useStatusBar("dark-content");
 
     // State
     const [location, setLocation] = useState<LocationObject | null>(null);
@@ -84,6 +84,7 @@ const MapTracking: React.FC<MapTrackingProps> = ({ destination }) => {
     const [placeNames, setPlaceNames] = useState({ start: '', destination: '' });
     const [destinationCoordinate, setDestinationCoordinate] = useState<Coordinate | null>(null);
     const [hasArrived, setHasArrived] = useState<boolean>(false);
+    const [showLoading, setShowLoading] = useState<boolean>(false);
 
     // Refs
     const watchPositionSubscription = useRef<Location.LocationSubscription | null>(null);
@@ -385,27 +386,6 @@ const MapTracking: React.FC<MapTrackingProps> = ({ destination }) => {
     }, [startLocationTracking]);
 
     useEffect(() => {
-        if (location && destination) {
-            const isSignificantChange = (
-                !prevLocationRef.current ||
-                !prevDestinationRef.current ||
-                Math.abs(prevLocationRef.current.coords.latitude - location.coords.latitude) > 0.0001 ||
-                Math.abs(prevLocationRef.current.coords.longitude - location.coords.longitude) > 0.0001 ||
-                prevDestinationRef.current !== destination
-            );
-
-            if (isSignificantChange) {
-                fetchRoute(
-                    { latitude: location.coords.latitude, longitude: location.coords.longitude },
-                    destination
-                );
-                prevLocationRef.current = location;
-                prevDestinationRef.current = destination;
-            }
-        }
-    }, [location, destination, fetchRoute]);
-
-    useEffect(() => {
         if (location && destinationCoordinate) {
             const isSignificantChange = (
                 !prevLocationRef.current ||
@@ -418,6 +398,10 @@ const MapTracking: React.FC<MapTrackingProps> = ({ destination }) => {
 
             if (isSignificantChange) {
                 fetchRouteInfo(
+                    { latitude: location.coords.latitude, longitude: location.coords.longitude },
+                    destinationCoordinate
+                );
+                fetchRoute(
                     { latitude: location.coords.latitude, longitude: location.coords.longitude },
                     destinationCoordinate
                 );
@@ -541,20 +525,53 @@ const MapTracking: React.FC<MapTrackingProps> = ({ destination }) => {
         );
     };
 
-    if (isLoading) {
+    setTimeout(() => {
+        setShowLoading(true)
+    }, 1000)
+
+    if (isLoading && showLoading) {
         return (
-            <View style={tw`flex-1 justify-center items-center bg-white bg-opacity-50`}>
-                <Loading loading={isLoading} />
-            </View>
+            <>
+                <StatusBar style='light' />
+                <Stack.Screen options={{
+                    headerShown: true,
+                    headerTitle: "",
+                    headerTransparent: true,
+                    headerLeft: () => (
+                        <TouchableOpacity onPress={() => router.back()} style={tw`flex-row items-center bg-white rounded-full p-2`}>
+                            <Ionicons name="chevron-back" size={24} color={tw.color('black')} />
+                        </TouchableOpacity>
+                    )
+                }} />
+                <LinearGradient
+                    colors={[String(tw.color("blue-700")), String(tw.color("blue-400")), String(tw.color("blue-500"))]}
+                    style={tw`flex-1 justify-center items-center`}>
+                    <View style={tw`h-30 w-30 overflow-hidden justify-center items-center rounded-full mb-2`}>
+                        <Image source={require("@/assets/images/location-loading.gif")} style={[tw`w-50 h-50 rounded-full`, { objectFit: "cover" }]} />
+                    </View>
+                    <View style={tw`flex-col gap-2`}>
+                        <Loading loading={isLoading} color='#fff' />
+                    </View>
+                </LinearGradient>
+            </>
         );
+    } else if (isLoading) {
+        return (
+            <>
+                <StatusBar style='light' />
+                <Stack.Screen options={{
+                    headerShown: false
+                }} />
+            </>
+        )
     }
 
     return (
         <>
+            <StatusBar style='dark' />
             <Stack.Screen options={{
                 headerShown: true,
                 headerTitle: "",
-                headerTitleStyle: { fontFamily: "Prompt-SemiBold", fontSize: 18, color: String(tw.color('black')) },
                 headerShadowVisible: false,
                 gestureEnabled: false,
                 headerTransparent: true,
@@ -564,7 +581,7 @@ const MapTracking: React.FC<MapTrackingProps> = ({ destination }) => {
                     </TouchableOpacity>
                 )
             }} />
-            <View style={tw`flex-1 justify-center items-center`}>
+            <View style={tw`flex-1 justify-center items-center bg-white`}>
                 {location && (
                     <MapView
                         ref={mapRef}
@@ -595,8 +612,7 @@ const MapTracking: React.FC<MapTrackingProps> = ({ destination }) => {
                             <Polyline
                                 coordinates={routeCoordinates}
                                 strokeColor={String(tw.color("blue-400"))}
-                                strokeWidth={5}
-                                style={tw`rounded-full`}
+                                strokeWidth={10}
                             />
                         )}
                     </MapView>
@@ -621,12 +637,9 @@ const MapTracking: React.FC<MapTrackingProps> = ({ destination }) => {
                     enablePanDownToClose={true}
                     enableContentPanningGesture={false}
                 >
-                    <BottomSheetView style={tw`flex-1`}>
-                        <TextTheme style={tw`text-center pb-2`} font='Prompt-SemiBold' size='xl'>รายละเอียดการเดินทาง</TextTheme>
-                        <ScrollView style={tw`flex-1`}>
-                            {routeInfo ? <RenderRouteDetails routeInfo={routeInfo} placeNames={placeNames} currentStepIndex={currentStepIndex} /> : null}
-                        </ScrollView>
-                    </BottomSheetView>
+                    <ScrollView style={tw`flex-1`}>
+                        <RenderRouteDetails routeInfo={routeInfo as any} placeNames={placeNames} currentStepIndex={currentStepIndex} />
+                    </ScrollView>
                 </BottomSheet>
             </View>
         </>

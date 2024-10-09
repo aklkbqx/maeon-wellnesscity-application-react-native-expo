@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView } from 'react-native';
 import { TouchableOpacity, View, TabController, Text, Button } from 'react-native-ui-lib';
 import tw from 'twrnc';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import api from '@/helper/api';
 import { formatDateThai, handleErrorMessage } from '@/helper/my-lib';
 import { useStatusBar } from '@/hooks/useStatusBar';
@@ -10,6 +10,7 @@ import useUser from '@/hooks/useUser';
 import Loading from '@/components/Loading';
 import TextTheme from '@/components/TextTheme';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { addCommas } from '@/helper/utiles';
 
 // Types
 interface BookingDetailItem {
@@ -78,9 +79,22 @@ const BookingStatusListItem: React.FC<{ item: BookingDetailItem; }> = ({ item })
 
   const isActiveBooking = item.status === 'CONFIRMED' && item.payment_status === 'PAID';
 
+  const navigateToMapOrPayment = () => {
+    if (isActiveBooking) {
+      router.navigate("/map")
+    } else {
+      router.navigate({
+        pathname: "/payments/",
+        params: {
+          bookingId: item.id
+        }
+      })
+    }
+  }
+
   return (
     <View style={tw`pt-2 px-2`}>
-      <TouchableOpacity style={tw`p-4 border border-zinc-200 bg-white relative overflow-hidden rounded-xl`}>
+      <TouchableOpacity onPress={navigateToMapOrPayment} style={tw`p-4 border border-zinc-200 bg-white relative overflow-hidden rounded-xl`}>
         <View style={tw`flex-row gap-2 absolute right-2 top-2`}>
           <View style={tw`rounded-xl px-2 pt-0.5 flex-row justify-center items-center ${getStatusColor(item.status)}`}>
             <TextTheme size='xs' color='white'>
@@ -96,14 +110,14 @@ const BookingStatusListItem: React.FC<{ item: BookingDetailItem; }> = ({ item })
         <TextTheme font='Prompt-Light' size='sm'>วันที่จอง: {formatDateThai(item.booking_date)}</TextTheme>
         <TextTheme font='Prompt-Light' size='sm'>วันที่เดินทาง: {formatDateThai(item.start_date)} - {formatDateThai(item.end_date)}</TextTheme>
         <TextTheme font='Prompt-Light' size='sm'>จำนวนคน: {item.people}</TextTheme>
-        <TextTheme font='Prompt-Medium' size='sm' style={tw`mt-2`}>ราคารวม: {item.total_price} บาท</TextTheme>
+        <TextTheme font='Prompt-Medium' size='sm' style={tw`mt-2`}>ราคารวม: {addCommas(item.total_price)} บาท</TextTheme>
         {isActiveBooking && (
-          <TouchableOpacity onPress={() => router.navigate("/map")} style={tw`bg-blue-500 flex-row gap-2 justify-center items-center rounded-xl p-2 mt-2`}>
+          <View style={tw`bg-blue-500 flex-row gap-2 justify-center items-center rounded-xl p-2 mt-2`}>
             <FontAwesome5 name="map-marker-alt" size={24} color="white" />
             <TextTheme color='white'>
               เปิดแผนที่เดินทาง
             </TextTheme>
-          </TouchableOpacity>
+          </View>
         )}
       </TouchableOpacity>
     </View>
@@ -164,6 +178,7 @@ const ActivityTabs: React.FC<{
                 }
               >
                 {renderBookings(item.key)}
+                <View style={tw`pb-30`} />
               </ScrollView>
             </TabController.TabPage>
           ))}
@@ -221,15 +236,14 @@ const Activity: React.FC = () => {
       setIsLogin(true);
       fetchAllBookingData();
     } else {
+      setLoading(false);
       setIsLogin(false);
     }
   };
 
-  useEffect(() => {
-    setIsLogin(true);
+  useFocusEffect(useCallback(() => {
     checkLogin();
-    setIsLogin(false);
-  }, []);
+  }, []))
 
   const renderBookings = (status: string) => {
     if (!bookingData) return null;
@@ -271,48 +285,40 @@ const Activity: React.FC = () => {
     ));
   };
 
-  if (loading) {
+  if (isLogin) {
     return (
-      <View style={tw`flex-1 justify-center items-center bg-slate-100`}>
-        <Loading loading={loading} />
+      <View style={tw`flex-1 bg-slate-100`}>
+        <ActivityTabs
+          items={tabItems}
+          bookingData={bookingData}
+          renderBookings={renderBookings}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+        />
       </View>
     );
   } else {
-    if (isLogin) {
-      return (
-        <View style={tw`flex-1 bg-slate-100`}>
-          <ActivityTabs
-            items={tabItems}
-            bookingData={bookingData}
-            renderBookings={renderBookings}
-            onRefresh={onRefresh}
-            refreshing={refreshing}
-          />
-        </View>
-      );
-    } else {
-      return (
-        <View style={tw`flex-1 justify-center items-center bg-slate-100 mb-10`}>
-          <View style={tw`flex-col gap-2`}>
-            <TextTheme>ยังไม่มีสถานะการเดินทางของคุณ</TextTheme>
-            <View style={tw`flex-row items-center gap-2`}>
-              <TextTheme>กรุณาทำการ</TextTheme>
-              <TouchableOpacity onPress={() => {
-                router.navigate({
-                  pathname: "/login",
-                  params: {
-                    backToPage: "/activity"
-                  }
-                });
-              }}>
-                <TextTheme font='Prompt-SemiBold' color='blue-500' style={tw`underline`}>เข้าสู่ระบบ</TextTheme>
-              </TouchableOpacity>
-              <TextTheme>ของคุณ</TextTheme>
-            </View>
+    return (
+      <View style={tw`flex-1 justify-center items-center bg-slate-100 mb-10`}>
+        <View style={tw`flex-col gap-2`}>
+          <TextTheme>ยังไม่มีสถานะการเดินทางของคุณ</TextTheme>
+          <View style={tw`flex-row items-center gap-2`}>
+            <TextTheme>กรุณาทำการ</TextTheme>
+            <TouchableOpacity onPress={() => {
+              router.navigate({
+                pathname: "/login",
+                params: {
+                  backToPage: "/activity"
+                }
+              });
+            }}>
+              <TextTheme font='Prompt-SemiBold' color='blue-500' style={tw`underline`}>เข้าสู่ระบบ</TextTheme>
+            </TouchableOpacity>
+            <TextTheme>ของคุณ</TextTheme>
           </View>
         </View>
-      );
-    }
+      </View>
+    );
   }
 };
 

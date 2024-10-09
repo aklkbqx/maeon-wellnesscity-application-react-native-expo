@@ -4,6 +4,8 @@ import { handleErrorMessage } from '@/helper/my-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { USER_TYPE } from '@/types/userType';
 import { userTokenLogin } from '@/helper/my-lib';
+import axios, { AxiosError } from 'axios';
+import { ErrorResponse } from '@/types/types';
 
 const useUser = () => {
     const [isLogin, setIsLogin] = useState<boolean>(false);
@@ -15,7 +17,13 @@ const useUser = () => {
                     setUserData(response.data);
                     resolve(null);
                 }).catch(error => {
-                    handleErrorMessage("ไม่สามารถโหลดข้อมูลผู้ใช้ได้\nกรุณาลองใหม่อีกครั้ง", true);
+                    if (axios.isAxiosError(error)) {
+                        const axiosError = error as AxiosError<ErrorResponse>;
+                        if (axiosError.response) {
+                            const errorMessage = axiosError.response.data?.message || "ไม่สามารถโหลดข้อมูลผู้ใช้ได้\nกรุณาลองใหม่อีกครั้ง";
+                            handleErrorMessage(errorMessage, true);
+                        }
+                    }
                     reject(error);
                 })
         )

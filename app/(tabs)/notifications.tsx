@@ -6,6 +6,8 @@ import tw from "twrnc";
 import TextTheme from '@/components/TextTheme';
 import { useStatusBar } from '@/hooks/useStatusBar';
 
+// TODO ทำระบบแจ้งเตือน
+
 interface Notification {
   id: string;
   title: string;

@@ -5,24 +5,23 @@ import TextTheme from "../TextTheme";
 import { Ionicons } from "@expo/vector-icons";
 import UserRoleBadge from "../UserRoleBadge";
 import { USER_TYPE } from "@/types/userType";
+import Loading from "../Loading";
 
 interface ProfileSectionProps {
     profileImageUrl: string | null;
     pickImage: () => void;
     userData: USER_TYPE | null;
+    imageLoading: boolean;
 }
 
-const ProfileSection: React.FC<ProfileSectionProps> = ({ profileImageUrl, pickImage, userData }) => {
-    const [isLoading, setIsLoading] = useState(true);
+const ProfileSection: React.FC<ProfileSectionProps> = ({ profileImageUrl, pickImage, userData, imageLoading }) => {
     const [imageError, setImageError] = useState(false);
 
     const handleImageLoad = () => {
-        setIsLoading(false);
         setImageError(false);
     };
 
     const handleImageError = () => {
-        setIsLoading(false);
         setImageError(true);
     };
 
@@ -37,9 +36,9 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ profileImageUrl, pickIm
                             onLoad={handleImageLoad}
                             onError={handleImageError}
                         />
-                        {isLoading && (
+                        {imageLoading && (
                             <View style={tw.style("absolute inset-0 justify-center items-center bg-black bg-opacity-50 rounded-full")}>
-                                <ActivityIndicator size="large" color={String(tw.color("white"))} />
+                                <Loading loading={imageLoading} color={String(tw.color("white"))} />
                             </View>
                         )}
                     </>

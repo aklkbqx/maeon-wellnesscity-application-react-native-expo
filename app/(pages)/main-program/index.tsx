@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, Image, FlatList, Modal, TextInput } from 'react-native';
-import { router, Stack, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import TextTheme from '@/components/TextTheme';
 import tw from 'twrnc';
 import { formatDateThai } from '@/helper/my-lib';
@@ -15,27 +15,25 @@ import { Program, ProgramType } from '@/types/programs';
 import { useStatusBar } from '@/hooks/useStatusBar';
 
 
-const TourProgramSelection: React.FC = () => {
+const MainTourProgram: React.FC = () => {
   useStatusBar("dark-content");
   const { bookingData, dateSelected } = useLocalSearchParams();
 
   const handleProgramDetail = (programId: number) => {
     router.navigate({
-      pathname: '/detail-program',
+      pathname: '/main-program/details',
       params: { programId, bookingData, dateSelected }
     });
   };
 
+  //state
   const [programTypes, setProgramTypes] = useState<ProgramType[]>([]);
   const [filteredProgramTypes, setFilteredProgramTypes] = useState<ProgramType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState<boolean>(false);
   const [isSearching, setIsSearching] = useState<boolean>(false);
-
-  useEffect(() => {
-    fetchProgramTypes();
-  }, []);
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
 
   const fetchProgramTypes = async () => {
     setLoading(true);
@@ -52,9 +50,14 @@ const TourProgramSelection: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    fetchProgramTypes();
+  }, []);
+
   const handleSearch = useCallback((text: string) => {
     setSearchQuery(text);
     setIsSearching(true);
+    setHasSearched(true);
     setTimeout(() => {
       if (text) {
         const filtered = programTypes.map(pt => ({
@@ -77,8 +80,8 @@ const TourProgramSelection: React.FC = () => {
     setFilteredProgramTypes(programTypes);
     setShowSearch(false);
     setIsSearching(false);
+    setHasSearched(false);
   }, [programTypes]);
-
 
   const parseImageNames = (imageNameData: string): string[] => {
     try {
@@ -89,44 +92,10 @@ const TourProgramSelection: React.FC = () => {
     }
   };
 
-  const renderProgram = (program: Program) => {
-    const schedules = JSON.parse(program.schedules);
-    const startTime = schedules.start.time
-    const endTime = schedules.end.time
-
-    const imageNames = program.program_images && program.program_images[0]
-      ? parseImageNames(program.program_images[0].image_name_data)
-      : [];
-    const firstImageName = imageNames.length > 0 ? imageNames[0] : null;
-
+  const renderStackHeader = () => {
     return (
-      <View key={program.id} style={tw`shadow`}>
-        <TouchableOpacity
-          style={tw`bg-white rounded-2xl mb-4 border border-slate-200 overflow-hidden`}
-          onPress={() => { handleProgramDetail(program.id) }}
-        >
-          <View style={tw`h-[180px] bg-slate-200 relative `}>
-            <Image
-              source={{ uri: `${apiUrl}/images/program_images/${firstImageName}` }}
-              style={[tw`flex-1 h-[180px]`, { objectFit: "cover" }]}
-            />
-          </View>
-          <View style={tw`p-4`}>
-            <TextTheme font="Prompt-SemiBold" style={tw`text-lg mb-2`}>{program.name}</TextTheme>
-            <TextTheme font='Prompt-Light' numberOfLines={2} style={tw`text-gray-600 mb-2`}>{program.description}</TextTheme>
-            <View style={tw`flex-row justify-between items-center`}>
-              <TextTheme font='Prompt-SemiBold' size='lg' style={tw`text-green-600`}>{program.total_price} บาท</TextTheme>
-              <TextTheme style={tw``}>{startTime} - {endTime}</TextTheme>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  return (
-    <>
       <Stack.Screen options={{
+        headerShown: true,
         header: () => (
           <View style={tw`bg-white`}>
             <Animatable.View animation={!showSearch ? "fadeInLeft" : "fadeInRight"} style={tw`w-full ios:pt-14 android:pt-7.5 pb-1 justify-between flex-row px-5 items-center gap-2`}>
@@ -165,6 +134,47 @@ const TourProgramSelection: React.FC = () => {
           </View>
         )
       }} />
+    )
+  }
+
+  const renderProgram = (program: Program) => {
+    const schedules = JSON.parse(program.schedules);
+    const startTime = schedules.start.time
+    const endTime = schedules.end.time
+
+    const imageNames = program.program_images && program.program_images[0]
+      ? parseImageNames(program.program_images[0].image_name_data)
+      : [];
+    const firstImageName = imageNames.length > 0 ? imageNames[0] : null;
+
+    return (
+      <View key={program.id} style={tw`shadow`}>
+        <TouchableOpacity
+          style={tw`bg-white rounded-2xl mb-4 border border-slate-200 overflow-hidden`}
+          onPress={() => { handleProgramDetail(program.id) }}
+        >
+          <View style={tw`h-[180px] bg-slate-200 relative `}>
+            <Image
+              source={{ uri: `${apiUrl}/images/program_images/${firstImageName}` }}
+              style={[tw`flex-1 h-[180px]`, { objectFit: "cover" }]}
+            />
+          </View>
+          <View style={tw`p-4`}>
+            <TextTheme font="Prompt-SemiBold" style={tw`text-lg mb-2`}>{program.name}</TextTheme>
+            <TextTheme font='Prompt-Light' numberOfLines={2} style={tw`text-gray-600 mb-2`}>{program.description}</TextTheme>
+            <View style={tw`flex-row justify-between items-center`}>
+              <TextTheme font='Prompt-SemiBold' size='lg' style={tw`text-green-600`}>{program.total_price} บาท</TextTheme>
+              <TextTheme style={tw``}>{startTime} - {endTime}</TextTheme>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  return (
+    <>
+      {renderStackHeader()}
       <Modal visible={loading} transparent>
         <BlurView intensity={10} style={tw`flex-1 justify-center items-center`}>
           <Loading loading={loading} size={'large'} />
@@ -198,10 +208,13 @@ const TourProgramSelection: React.FC = () => {
                 <Loading loading={isSearching} size={'large'} style={tw`mt-10`} />
               )
             ) : (
-              <View style={tw`mt-5`}>
-                <TextTheme style={tw`text-center text-zinc-800`}>ไม่พบผลลัพธ์ที่คุณค้นหา</TextTheme>
-              </View>
-            )) : <Loading loading={programTypes ? true : false} />}
+              hasSearched && (
+                <View style={tw`mt-5`}>
+                  <TextTheme style={tw`text-center text-zinc-800`}>ไม่พบผลลัพธ์ที่คุณค้นหา</TextTheme>
+                </View>
+              )
+            )
+          ) : null}
         </View>
         <View style={tw`mb-20`}></View>
       </ScrollView>
@@ -209,4 +222,4 @@ const TourProgramSelection: React.FC = () => {
   );
 };
 
-export default TourProgramSelection;
+export default MainTourProgram;

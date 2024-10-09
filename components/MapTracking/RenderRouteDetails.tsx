@@ -28,6 +28,7 @@ const RenderRouteDetails: React.FC<RenderRouteDetails_Type> = ({ routeInfo, plac
 
     return (
         <View style={tw`px-4`}>
+            <TextTheme style={tw`text-center pb-2`} font='Prompt-SemiBold' size='xl'>รายละเอียดการเดินทาง</TextTheme>
             <View style={tw`bg-white p-4 mb-4 rounded-lg border-b border-zinc-200`}>
                 <View style={tw`flex-col mb-2`}>
                     <TextTheme font='Prompt-SemiBold' size='lg'>{totalDuration} นาที ({formatDistance(totalDistance)})</TextTheme>

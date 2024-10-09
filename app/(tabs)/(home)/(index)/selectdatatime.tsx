@@ -132,7 +132,7 @@ const SelectDateTime: React.FC = () => {
         await AsyncStorage.removeItem('lastTravelItinerary');
       }
       router.navigate({
-        pathname: '/travel-itinerary',
+        pathname: '/travel-schedules/',
         params: {
           dataForBooking: JSON.stringify(formatDataForBooking())
         }

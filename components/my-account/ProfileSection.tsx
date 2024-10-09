@@ -31,7 +31,7 @@ const ProfileSection: React.FC<ProfileType> = ({ profileImageUrl, userData, load
                 ))}
             </View>
             {userData ? (
-                <TouchableOpacity onPress={() => router.navigate("/edit-account")} style={tw.style("flex-col gap-1 flex-1")}>
+                <TouchableOpacity onPress={() => router.navigate("/account/edit-account")} style={tw.style("flex-col gap-1 flex-1")}>
                     <View style={tw.style("flex-row gap-1")}>
                         <TextTheme size='lg' font="Prompt-SemiBold">{userData && `${userData.firstname} ${userData.lastname}`}</TextTheme>
                     </View>
@@ -45,7 +45,7 @@ const ProfileSection: React.FC<ProfileType> = ({ profileImageUrl, userData, load
             ) : (
                 <View style={tw`flex-row items-center`}>
                     <TouchableOpacity onPress={() => router.navigate({
-                        pathname: "/(register)",
+                        pathname: "/register",
                         params: {
                             backToPage: "/my-account"
                         }
