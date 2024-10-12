@@ -48,7 +48,6 @@ const CreateProgramCategories: React.FC = () => {
   }, [fetchLocationTypes]);
 
   const selectedCategories = (categoryName: string) => {
-    console.log(categoryName);
     // TODO: Implement category selection logic
   };
 

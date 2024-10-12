@@ -1,14 +1,13 @@
-import { Avatar, Image, TouchableOpacity, View } from "react-native-ui-lib";
+import { Avatar, TouchableOpacity, View } from "react-native-ui-lib";
 import TextTheme from "../TextTheme";
 import tw from "twrnc"
-import { Href, router } from "expo-router";;
+import { router } from "expo-router";
 import { formatEmail, formatPhoneNumber } from "@/helper/my-lib";
-import { USER_TYPE } from "@/types/userType";
-import * as Animatable from 'react-native-animatable';
+import { Users } from "@/types/PrismaType";
 
 interface ProfileType {
     profileImageUrl: string | null;
-    userData: USER_TYPE | null;
+    userData: Users | null;
     loading: boolean;
 }
 

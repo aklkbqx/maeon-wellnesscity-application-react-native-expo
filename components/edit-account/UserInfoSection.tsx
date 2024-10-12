@@ -3,13 +3,13 @@ import TextTheme from "../TextTheme";
 import tw from "twrnc"
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { USER_TYPE } from "@/types/userType";
 import { FormDataInput } from "@/types/types";
+import { Users } from "@/types/PrismaType";
 
 interface UserInfoSectionProps {
     formDataInput: FormDataInput;
     setFormDataInput: React.Dispatch<React.SetStateAction<FormDataInput>>;
-    userData: USER_TYPE | null;
+    userData: Users | null;
 }
 
 const UserInfoSection: React.FC<UserInfoSectionProps> = ({ formDataInput, setFormDataInput, userData }) => {

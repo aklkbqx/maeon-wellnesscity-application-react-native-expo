@@ -7,9 +7,9 @@ import TextTheme from '@/components/TextTheme';
 import { BankIcon, MoneyReport } from '@/components/SvgComponents';
 import { useStatusBar } from '@/hooks/useStatusBar';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { formatDateThai, formatPhoneNumber, handleErrorMessage } from '@/helper/my-lib';
+import { formatDateThai, formatPhoneNumber, handleAxiosError, handleErrorMessage } from '@/helper/my-lib';
 import useUser from '@/hooks/useUser';
-import { USER_TYPE } from '@/types/userType';
+import { Users } from '@/types/PrismaType';
 import useShowToast from '@/hooks/useShowToast';
 import Loading from '@/components/Loading';
 import api from '@/helper/api';
@@ -17,7 +17,6 @@ import { addCommas } from '@/helper/utiles';
 import PaymentQRCode from '@/components/PaymentQRCode';
 import axios, { AxiosError } from 'axios';
 import { ErrorResponse } from '@/types/types';
-
 
 interface BookingItem {
     booking_id: number;
@@ -32,7 +31,6 @@ interface BookingItem {
     programs: {
         program_id: number;
         program_name: string;
-        people: number;
     }[];
 }
 
@@ -50,9 +48,10 @@ const Payment = () => {
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
     const [onSelectPaymentMethod, setOnSelectPaymentMethod] = useState<PaymentMethod | null>(null);
     const [showQRCode, setShowQRCode] = useState(false);
-    const [userData, setUserData] = useState<USER_TYPE | null>(null);
+    const [userData, setUserData] = useState<Users | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [loading2, setLoading2] = useState<boolean>(false);
+    const [isConfirming, setIsConfirming] = useState<boolean>(false);
 
     const fetchBookingData = useCallback(async (id: number) => {
         setLoading(true);
@@ -62,13 +61,9 @@ const Payment = () => {
                 setBookingData(response.data.data);
             }
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                const axiosError = error as AxiosError<ErrorResponse>;
-                if (axiosError.response) {
-                    const errorMessage = axiosError.response.data?.message || "ไม่สามารถโหลดข้อมูลการจองของคุณได้ กรุณาลองใหม่อีกครั้ง";
-                    handleErrorMessage(errorMessage);
-                }
-            }
+            handleAxiosError(error || "ไม่สามารถโหลดข้อมูลการจองของคุณได้ กรุณาลองใหม่อีกครั้ง", (message) => {
+                handleErrorMessage(message);
+            });
         } finally {
             setLoading(false);
         }
@@ -88,13 +83,9 @@ const Payment = () => {
             }
 
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                const axiosError = error as AxiosError<ErrorResponse>;
-                if (axiosError.response) {
-                    const errorMessage = axiosError.response.data?.message || "ไม่สามารถโหลดข้อมูลการจองของคุณได้ กรุณาลองใหม่อีกครั้ง";
-                    handleErrorMessage(errorMessage);
-                }
-            }
+            handleAxiosError(error, (message) => {
+                handleErrorMessage(message);
+            });
         } finally {
             setLoading(false);
         }
@@ -151,26 +142,21 @@ const Payment = () => {
                 // Handle bank account number payment method
             }
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                const axiosError = error as AxiosError<ErrorResponse>;
-                if (axiosError.response) {
-                    const errorMessage = axiosError.response.data?.message || "ไม่สามารถเริ่มการชำระเงินได้ กรุณาลองใหม่อีกครั้ง";
-                    handleErrorMessage(errorMessage);
-                }
-            }
+            handleAxiosError(error, (message) => {
+                handleErrorMessage(message);
+            });
         }
     };
 
-    const handleConfirmPayment = async (slipImage: string, refNbr: string) => {
+    const handleConfirmPayment = async (slipImage: string) => {
+        setIsConfirming(true);
         try {
             const formData = new FormData();
             formData.append('booking_id', bookingData?.booking_id.toString() as string);
-            formData.append('amount', bookingData?.total_price as string);
-            formData.append('refNbr', refNbr);
             formData.append('slip', {
                 uri: slipImage,
                 type: 'image/jpeg',
-                name: 'payment_slip.jpg',
+                name: 'slip.jpg',
             } as any);
 
             const response = await api.post("/api/v1/payments/confirm-payment", formData, {
@@ -180,25 +166,23 @@ const Payment = () => {
             });
 
             if (response.data.success) {
-                useShowToast("success", "สำเร็จ", "ยืนยันการชำระเงินเรียบร้อยแล้ว");
+                useShowToast("success", "สำเร็จ", "กำลังตรวจสอบการชำระเงินของคุณ...");
                 setShowQRCode(false);
+                setIsConfirming(false);
                 router.navigate({
                     pathname: "/payments/success",
                     params: {
-                        paymentSuccess: JSON.stringify(response.data.data)
+                        paymentPending: JSON.stringify(response.data.data)
                     }
                 });
             } else {
                 handleErrorMessage(response.data.message || "ไม่สามารถยืนยันการชำระเงินได้ กรุณาลองใหม่อีกครั้ง");
             }
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                const axiosError = error as AxiosError<ErrorResponse>;
-                if (axiosError.response) {
-                    const errorMessage = axiosError.response.data?.message || "เกิดข้อผิดพลาดในการยืนยันการชำระเงิน";
-                    handleErrorMessage(errorMessage);
-                }
-            }
+            setIsConfirming(false);
+            handleAxiosError(error, (message) => {
+                handleErrorMessage(message);
+            });
         }
     };
 
@@ -286,7 +270,6 @@ const Payment = () => {
                                     <TextTheme font='Prompt-Regular' size='sm' color='zinc-900'>โปรแกรมท่องเที่ยว</TextTheme>
                                     <View style={tw`flex-row justify-between my-2`}>
                                         <TextTheme font='Prompt-Light' size='xs' color='zinc-500' style={tw`w-55`}>- {program.program_name}</TextTheme>
-                                        <TextTheme font='Prompt-Light' size='xs' color='zinc-500'>{program.people} คน</TextTheme>
                                     </View>
                                 </View>
                             ))}
@@ -395,6 +378,7 @@ const Payment = () => {
                             paymentMethod={paymentMethod as PaymentMethod}
                             onClose={() => setShowQRCode(false)}
                             onConfirmPayment={handleConfirmPayment}
+                            isConfirming={isConfirming}
                         />
                     )}
                 </View>

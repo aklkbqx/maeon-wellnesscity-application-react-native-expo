@@ -6,7 +6,6 @@ import { handleErrorMessage } from '@/helper/my-lib';
 import { Ionicons } from '@expo/vector-icons';
 import Loading from '@/components/Loading';
 import TextTheme from '@/components/TextTheme';
-import { ProgramDetail } from '@/types/programs';
 import Animated, {
     useSharedValue,
     useAnimatedScrollHandler,
@@ -31,7 +30,7 @@ interface BookingItem {
 const DetailProgramScreen: React.FC = () => {
     useStatusBar("light-content");
     const { programId, bookingData, dateSelected } = useLocalSearchParams();
-    const [programDetail, setProgramDetail] = useState<ProgramDetail | null>(null);
+    const [programDetail, setProgramDetail] = useState<any | null>(null);
     const [parseJsonBookingData, setParseJsonBookingData] = useState<BookingItem>(() => {
         try {
             return JSON.parse((bookingData as string) || '[]');
@@ -183,7 +182,7 @@ const DetailProgramScreen: React.FC = () => {
 export default DetailProgramScreen;
 
 
-const ProgramTabs: React.FC<{ programDetail: ProgramDetail }> = ({ programDetail }) => {
+const ProgramTabs: React.FC<{ programDetail: any }> = ({ programDetail }) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [items] = useState([
         { label: 'ภาพรวม', key: 'overview' },

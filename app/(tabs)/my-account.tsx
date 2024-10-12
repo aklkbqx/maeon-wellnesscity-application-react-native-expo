@@ -4,18 +4,18 @@ import tw from "twrnc"
 import ProfileSection from '@/components/my-account/ProfileSection';
 import MenuSection from '@/components/my-account/MenuSection';
 import useUser from '@/hooks/useUser';
-import api, { apiUrl } from '@/helper/api';
+import api from '@/helper/api';
 import { handleErrorMessage } from '@/helper/my-lib';
 import { useFocusEffect } from 'expo-router';
 import { useStatusBar } from '@/hooks/useStatusBar';
-import { USER_TYPE } from '@/types/userType';
+import { Users } from '@/types/PrismaType';
 
 const MyAccount: React.FC = () => {
   useStatusBar("dark-content");
   const { checkLoginStatus, fetchUserData } = useUser();
 
   // State
-  const [userData, setUserData] = useState<USER_TYPE | null>(null);
+  const [userData, setUserData] = useState<Users | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
@@ -52,10 +52,10 @@ const MyAccount: React.FC = () => {
 
 
   useEffect(() => {
-    if (userData && (profileImage.current !== userData.profile_picture)) {
-        fetchUserProfile(userData.profile_picture);
+    if (userData && userData.profile_picture && (profileImage.current !== userData.profile_picture)) {
+      fetchUserProfile(userData.profile_picture);
     }
-}, [userData])
+  }, [userData])
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

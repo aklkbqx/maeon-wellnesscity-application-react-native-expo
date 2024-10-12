@@ -24,17 +24,18 @@ interface JsonData {
   };
   payments: {
     payment_date: string;
+    status: string
   };
 }
 
 const PaymentSuccessScreen: React.FC = () => {
   useStatusBar("dark-content");
-  const { paymentSuccess } = useLocalSearchParams();
+  const { paymentPending } = useLocalSearchParams();
 
   const [loading, setLoading] = useState<boolean>(true);
   const [jsonData, setJsonData] = React.useState<JsonData>(() => {
     try {
-      return JSON.parse((paymentSuccess as string) || '{}');
+      return JSON.parse((paymentPending as string) || '{}');
     } catch {
       handleErrorMessage('มีข้อผิดพลาดบางอย่างเกิดขึ้น');
       return {} as JsonData;
@@ -95,10 +96,10 @@ const PaymentSuccessScreen: React.FC = () => {
           <View style={tw`p-4`}>
             {bookingDetails.map((program: BookingDetail, index: number) => (
               <View key={index} style={tw`flex-row justify-between items-center mb-4`}>
-                <View style={tw`flex-row items-center`}>
+                <View style={tw`flex-row items-center w-[60%]`}>
                   <Ionicons name="checkmark-circle" size={24} color={tw.color('emerald-500')} />
                   <View style={tw`ml-2`}>
-                    <View style={tw`w-[90%] flex-row flex-wrap`}>
+                    <View style={tw`flex-row flex-wrap`}>
                       <TextTheme font="Prompt-Medium" size="sm">{program.program_name}</TextTheme>
                     </View>
                     <TextTheme style={tw`text-gray-500 text-xs`}>{program.people} คน</TextTheme>
@@ -128,14 +129,17 @@ const PaymentSuccessScreen: React.FC = () => {
           </View>
         </Card>
 
-        <View style={tw`flex-row justify-center mt-4`}>
-          <TouchableOpacity style={tw`items-center mx-4`} onPress={handleShare}>
-            <View style={tw`w-12 h-12 rounded-full bg-slate-700 items-center justify-center mb-1`}>
-              <Ionicons name="share-social" size={24} color="white" />
-            </View>
-            <TextTheme size="xs" style={tw`text-gray-600`}>แชร์</TextTheme>
-          </TouchableOpacity>
-        </View>
+        {jsonData.payments.status !== "PAID" ? (
+          <View style={tw`flex-row justify-center mt-4`}>
+            <TouchableOpacity style={tw`items-center mx-4`} onPress={handleShare}>
+              <View style={tw`w-12 h-12 rounded-full bg-slate-700 items-center justify-center mb-1`}>
+                <Ionicons name="share-social" size={24} color="white" />
+              </View>
+              <TextTheme size="xs" style={tw`text-gray-600`}>แชร์</TextTheme>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
 
         <TouchableOpacity
           onPress={() => router.replace('/(home)')}

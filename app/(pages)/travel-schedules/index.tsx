@@ -14,7 +14,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import useShowToast from '@/hooks/useShowToast';
 import api from '@/helper/api';
 import { handleErrorMessage } from '@/helper/my-lib';
-import { ProgramDetail } from '@/types/programs';
 import { useStatusBar } from '@/hooks/useStatusBar';
 import Loading from '@/components/Loading';
 
@@ -257,7 +256,7 @@ const DateItem: React.FC<{
   isLast: boolean;
   length: number
 }> = ({ item, index, onPress, onDetailsPress, isLast, length }) => {
-  const [programData, setProgramData] = useState<ProgramDetail>();
+  const [programData, setProgramData] = useState<any>();
   const [dialogDeleteDate, setDialogDeleteDate] = useState<boolean>(false);
 
   const fetchProgram = async () => {

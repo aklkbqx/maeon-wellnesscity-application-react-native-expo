@@ -1,6 +1,6 @@
-import { TouchableOpacity, Image } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { router, Stack, useFocusEffect, useNavigation } from 'expo-router'
+import { router, Stack, useFocusEffect } from 'expo-router'
 import TextTheme from '@/components/TextTheme'
 import tw from "twrnc"
 import { Ionicons } from '@expo/vector-icons'
@@ -12,9 +12,7 @@ import { handleErrorMessage } from '@/helper/my-lib';
 import { Avatar, View } from 'react-native-ui-lib'
 import { useStatusBar } from '@/hooks/useStatusBar'
 import useUser from '@/hooks/useUser'
-import { BlurView } from 'expo-blur'
-import { USER_TYPE } from '@/types/userType'
-import Loading from '@/components/Loading'
+import { Users } from '@/types/PrismaType';
 
 const SkeletonLoader: React.FC<{ width: number; height: number; borderRadius: number }> = ({ width, height, borderRadius }) => {
     return (
@@ -27,15 +25,19 @@ const SkeletonLoader: React.FC<{ width: number; height: number; borderRadius: nu
 const RootHome = () => {
     useStatusBar("dark-content");
 
+    // Hooks
+    const { checkLoginStatus, fetchUserData } = useUser();
+
     // State
     const [showCalendar, setShowCalendar] = useState<boolean>(false);
-    const { checkLoginStatus, fetchUserData } = useUser();
-    const [userData, setUserData] = useState<USER_TYPE | null>(null);
+    const [userData, setUserData] = useState<Users | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [showSkeleton, setShowSkeleton] = useState<boolean>(false);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
     // Refs
     const profileImage = useRef("");
+    const loadingTimer = useRef<NodeJS.Timeout | null>(null);
 
     const toggleView = useCallback(() => {
         router.navigate(!showCalendar ? "/selectdatatime" : "/");
@@ -55,27 +57,45 @@ const RootHome = () => {
 
     const initializeUserData = useCallback(async () => {
         setLoading(true);
+        setShowSkeleton(false);
+
+        // Set a timer to show skeleton after 1 second
+        loadingTimer.current = setTimeout(() => {
+            setShowSkeleton(true);
+        }, 1000);
+
         const { login } = await checkLoginStatus();
         if (login) {
             await fetchUserData(setUserData);
         }
         setLoading(false);
+
+        // Clear the timer if loading finished before 1 second
+        if (loadingTimer.current) {
+            clearTimeout(loadingTimer.current);
+        }
     }, [checkLoginStatus, fetchUserData]);
 
     useFocusEffect(
         useCallback(() => {
             initializeUserData();
+            return () => {
+                // Clear the timer when component unmounts or loses focus
+                if (loadingTimer.current) {
+                    clearTimeout(loadingTimer.current);
+                }
+            };
         }, [initializeUserData])
     );
 
     useEffect(() => {
-        if (userData && (profileImage.current !== userData.profile_picture)) {
+        if (userData && userData.profile_picture && (profileImage.current !== userData.profile_picture)) {
             fetchUserProfile(userData.profile_picture);
         }
-    }, [userData])
+    }, [userData, fetchUserProfile])
 
     const renderContent = () => {
-        if (loading) {
+        if (loading && showSkeleton) {
             return (
                 <View style={tw`flex-row items-center gap-3`}>
                     <SkeletonLoader width={68} height={68} borderRadius={50} />

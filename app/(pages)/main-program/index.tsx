@@ -11,8 +11,8 @@ import { handleErrorMessage } from '@/helper/my-lib';
 import Loading from '@/components/Loading';
 import { BlurView } from 'expo-blur';
 import * as Animatable from 'react-native-animatable';
-import { Program, ProgramType } from '@/types/programs';
 import { useStatusBar } from '@/hooks/useStatusBar';
+import { Programs, ProgramTypes } from '@/types/PrismaType';
 
 
 const MainTourProgram: React.FC = () => {
@@ -27,8 +27,8 @@ const MainTourProgram: React.FC = () => {
   };
 
   //state
-  const [programTypes, setProgramTypes] = useState<ProgramType[]>([]);
-  const [filteredProgramTypes, setFilteredProgramTypes] = useState<ProgramType[]>([]);
+  const [programTypes, setProgramTypes] = useState<ProgramTypes[]>([]);
+  const [filteredProgramTypes, setFilteredProgramTypes] = useState<ProgramTypes[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState<boolean>(false);
@@ -137,7 +137,7 @@ const MainTourProgram: React.FC = () => {
     )
   }
 
-  const renderProgram = (program: Program) => {
+  const renderProgram = (program: Programs) => {
     const schedules = JSON.parse(program.schedules);
     const startTime = schedules.start.time
     const endTime = schedules.end.time
@@ -195,7 +195,7 @@ const MainTourProgram: React.FC = () => {
               !isSearching ? (
                 <FlatList
                   data={filteredProgramTypes}
-                  renderItem={({ item: programType }: { item: ProgramType }) => (
+                  renderItem={({ item: programType }: { item: ProgramTypes }) => (
                     <>
                       {programType.id !== 3 ? <TextTheme font="Prompt-Medium" size="lg" style={tw`mb-3`}>{programType.name}</TextTheme> : null}
                       {programType.programs.map(renderProgram)}

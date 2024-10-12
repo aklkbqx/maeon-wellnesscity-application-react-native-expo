@@ -4,13 +4,13 @@ import { ActivityIndicator, Image, TouchableOpacity, View } from "react-native";
 import TextTheme from "../TextTheme";
 import { Ionicons } from "@expo/vector-icons";
 import UserRoleBadge from "../UserRoleBadge";
-import { USER_TYPE } from "@/types/userType";
 import Loading from "../Loading";
+import { Users } from "@/types/PrismaType";
 
 interface ProfileSectionProps {
     profileImageUrl: string | null;
     pickImage: () => void;
-    userData: USER_TYPE | null;
+    userData: Users | null;
     imageLoading: boolean;
 }
 
@@ -28,7 +28,7 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ profileImageUrl, pickIm
     return (
         <View style={tw.style("my-2 flex-col items-center")}>
             <TouchableOpacity onPress={pickImage} style={tw.style("relative")}>
-                {profileImageUrl && !imageError ? (
+                {profileImageUrl ? (
                     <>
                         <Image
                             style={[tw.style("w-32 h-32 rounded-full border-2 border-zinc-300"), { objectFit: "cover" }]}
@@ -45,9 +45,15 @@ const ProfileSection: React.FC<ProfileSectionProps> = ({ profileImageUrl, pickIm
                 ) : (
                     <View style={tw.style("w-32 h-32 rounded-full border-2 border-zinc-300 justify-center items-center bg-gray-200")}>
                         <Ionicons name="image-outline" size={40} color={String(tw.color("gray-400"))} />
-                        <TextTheme size="xs" font="Prompt-Regular" style={tw.style("mt-2 text-center")}>
-                            {imageError ? "รูปภาพหายไป" : "เลือกรูปภาพ"}
-                        </TextTheme>
+                        {imageError ? (
+                            <TextTheme size="xs" font="Prompt-Regular" style={tw.style("mt-2 text-center")}>
+                                {imageError ? "รูปภาพหายไป" : "เลือกรูปภาพ"}
+                            </TextTheme>
+                        ) : (
+                            <View style={tw.style("absolute inset-0 justify-center items-center bg-black bg-opacity-50 rounded-full")}>
+                                <Loading loading={imageLoading} color={String(tw.color("white"))} />
+                            </View>
+                        )}
                     </View>
                 )}
                 <View style={tw.style("absolute bottom-2 right-[-5px]")}>

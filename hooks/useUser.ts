@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '@/helper/api';
-import { handleErrorMessage } from '@/helper/my-lib';
+import { handleAxiosError, handleErrorMessage } from '@/helper/my-lib';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { USER_TYPE } from '@/types/userType';
+import { Users } from '@/types/PrismaType';
 import { userTokenLogin } from '@/helper/my-lib';
 import axios, { AxiosError } from 'axios';
 import { ErrorResponse } from '@/types/types';
@@ -10,20 +10,16 @@ import { ErrorResponse } from '@/types/types';
 const useUser = () => {
     const [isLogin, setIsLogin] = useState<boolean>(false);
 
-    const fetchUserData = useCallback(async (setUserData: React.Dispatch<React.SetStateAction<USER_TYPE | null>>) => {
+    const fetchUserData = useCallback(async (setUserData: React.Dispatch<React.SetStateAction<Users | null>>) => {
         return new Promise((resolve, reject) =>
             api.get('/api/v1/users/me')
                 .then(response => {
                     setUserData(response.data);
                     resolve(null);
                 }).catch(error => {
-                    if (axios.isAxiosError(error)) {
-                        const axiosError = error as AxiosError<ErrorResponse>;
-                        if (axiosError.response) {
-                            const errorMessage = axiosError.response.data?.message || "ไม่สามารถโหลดข้อมูลผู้ใช้ได้\nกรุณาลองใหม่อีกครั้ง";
-                            handleErrorMessage(errorMessage, true);
-                        }
-                    }
+                    handleAxiosError(error, (message) => {
+                        handleErrorMessage(message);
+                    });
                     reject(error);
                 })
         )

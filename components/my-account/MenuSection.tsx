@@ -7,7 +7,7 @@ import { Href, router } from "expo-router";
 import { Switch } from "react-native-ui-lib";
 import useUser from "@/hooks/useUser";
 import LogoutModal from "../LogoutModal";
-import { USER_TYPE } from "@/types/userType";
+import { Users } from "@/types/PrismaType";
 
 type IoniconsName = keyof typeof Ionicons.glyphMap;
 
@@ -66,7 +66,7 @@ const menuList: MenuList = {
     ]
 };
 
-const MenuSection: React.FC<{ title: string; type: keyof typeof menuList; userData: USER_TYPE | null }> = ({ title, type, userData }) => {
+const MenuSection: React.FC<{ title: string; type: keyof typeof menuList; userData: Users | null }> = ({ title, type, userData }) => {
     const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
     const { logout } = useUser();
 

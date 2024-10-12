@@ -16,9 +16,8 @@ import ProfileSection from '@/components/edit-account/ProfileSection';
 import UserInfoSection from '@/components/edit-account/UserInfoSection';
 import ActionButtons from '@/components/edit-account/ActionButtons';
 import OverlayComponents from '@/components/edit-account/OverlayComponents';
-import { USER_TYPE } from '@/types/userType';
+import { Users } from '@/types/PrismaType';
 import { FormDataInput } from '@/types/types';
-import Loading from '@/components/Loading';
 
 interface PreparedImage {
     uri: string;
@@ -39,21 +38,24 @@ const AccountSetting: React.FC = () => {
         currentPassword: false, newPassword: false, confirmPassword: false
     });
     const [passwordsMatch, setPasswordsMatch] = useState(true);
-    const [imageLoading, setImageLoading] = useState<boolean>(false);
+    const [imageLoading, setImageLoading] = useState<boolean>(true);
 
     // User & Profile
     const { checkLoginStatus, fetchUserData } = useUser();
-    const [userData, setUserData] = useState<USER_TYPE | null>(null);
+    const [userData, setUserData] = useState<Users | null>(null);
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
     const fetchUserProfile = useCallback(async (profile: string) => {
+        setImageLoading(true)
         try {
             const res = await api.get(`/images/user_images/${profile}`);
             setProfileImageUrl(res.request.responseURL);
         } catch {
             handleErrorMessage("ไม่สามารถโหลดรูปภาพโปรไฟล์ได้");
             setProfileImageUrl(null);
+        }finally{
+            setImageLoading(false)
         }
     }, []);
 
@@ -68,7 +70,7 @@ const AccountSetting: React.FC = () => {
         initializeUserData();
     }, [initializeUserData]));
 
-    const setDefaultUserData = useCallback((user: USER_TYPE) => {
+    const setDefaultUserData = useCallback((user: Users) => {
         setFormDataInput({
             firstname: user.firstname || '',
             lastname: user.lastname || '',
@@ -79,7 +81,7 @@ const AccountSetting: React.FC = () => {
 
     useEffect(() => {
         const fetchProfile = async () => {
-            if (userData && !profileImageUrl) {
+            if (userData && userData.profile_picture) {
                 await fetchUserProfile(userData.profile_picture);
             }
         };
@@ -87,7 +89,7 @@ const AccountSetting: React.FC = () => {
         if (userData) {
             setDefaultUserData(userData)
         }
-    }, [userData, profileImageUrl]);
+    }, [userData]);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
